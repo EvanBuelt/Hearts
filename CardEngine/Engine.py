@@ -95,12 +95,14 @@ class Card(UI.UIElement):
         dx = 0
         dy = 0
 
+        x = self._hitbox.rotatedPoints[0].x
+        y = self._hitbox.rotatedPoints[0].y
         # Point 0 is reference used for hitbox, so need to offset the display to match the hitbox
         for point in self._hitbox.rotatedPoints:
-            if (point.x - self._rect.x) < dx:
-                dx = point.x - self._rect.x
-            if (point.y - self._rect.y) < dy:
-                dy = point.y - self._rect.y
+            if (point.x - x) < dx:
+                dx = point.x - x
+            if (point.y - y) < dy:
+                dy = point.y - y
 
         # Display front or back of the card
         if self._visible:
@@ -109,15 +111,11 @@ class Card(UI.UIElement):
             else:
                 rotated_image = pygame.transform.rotate(self._backSurface, self._angle)
 
-            # print "Actual: ", (self._rect.x + dx, self._rect.y + dy)
-            #print "Expected: ", (self._rect.x, self._rect.y)
-            #print "Dx, dy: ", (dx, dy)
-            #print "Angle: ", self._angle
             surface.blit(rotated_image, (self._rect.x + dx, self._rect.y + dy))
 
     # Used to update the internal state of the UI Element.
     def _update(self):
-        self._hitbox.update(x=self._rect.x, y=self._rect.y)
+        self._hitbox.update(x=self._rect.x, y=self._rect.y, angle=self._angle)
         return
 
     def collide(self, x, y):
@@ -264,7 +262,6 @@ class CardEngine:
             # Let UI handle events
             for ui in cls.UIElements:
                 ui.handle_event(event)
-                print ui
 
     @classmethod
     def render(cls):

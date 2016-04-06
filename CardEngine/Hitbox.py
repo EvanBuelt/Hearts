@@ -32,6 +32,7 @@ class SquareHitbox:
             return False
 
     def update(self, x=None, y=None, width=None, height=None, angle=None):
+
         if x is not None:
             self.x = x
         if y is not None:
@@ -62,7 +63,7 @@ class SquareHitbox:
             self.rotatedPoints.append(point.copy())
 
         for point in self.rotatedPoints:
-            point.rotate_counterclockwise(self.angle, x, y)
+            point.rotate_counterclockwise(x, y, self.angle)
 
 
 class Point:
@@ -77,8 +78,9 @@ class Point:
         self.x += dx
         self.y += dy
 
-    def rotate_clockwise(self, angle_radians, x=0, y=0):
+    def rotate_clockwise(self, x, y, angle_radians):
         # Rotate about the point (x, y) clockwise by a given angle in radians
+
         nx = math.cos(angle_radians) * (self.x - x) - math.sin(angle_radians) * (self.y - y) + x
         ny = math.sin(angle_radians) * (self.x - x) + math.cos(angle_radians) * (self.y - y) + y
 
