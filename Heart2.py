@@ -6,7 +6,11 @@ import pygame
 suits = {1: "Clubs",
          2: "Diamonds",
          3: "Spades",
-         4: "Hearts"}
+         4: "Hearts",
+         "Clubs": 1,
+         "Diamonds": 2,
+         "Spades": 3,
+         "Hearts": 4}
 
 values = {14: "Ace",
           2: "2",
@@ -55,7 +59,7 @@ class HumanAI:
     def pass_card(self, human_player, card):
         return
 
-    def play_card(self, computer_player, trick_pile):
+    def play_card(self, computer_player, current_suit):
         return
 
 
@@ -72,9 +76,14 @@ class ComputerAI:
         passing.append(hand[2])
         return
 
-    def play_card(self, computer_player, trick_pile):
+    def play_card(self, computer_player, current_suit):
+        hand = computer_player.hand
 
-        return
+        for i in range(0, len(hand)):
+            if hand[i].suit is current_suit:
+                return hand.pop(i)
+
+        return hand.pop()
 
 
 class Hearts:
@@ -87,10 +96,10 @@ class Hearts:
         # Initialize the players for the game
         # Bottom is Human Player. Goes clockwise for computers
         # i.e. one is left, two is top, three is right
-        self.player_one   = Player("Human", HumanAI())
-        self.player_two   = Player("Sarah", ComputerAI())
-        self.player_three = Player("Jane" , ComputerAI())
-        self.player_four  = Player("Smith", ComputerAI())
+        self.player_one = Player("Human", HumanAI())
+        self.player_two = Player("Sarah", ComputerAI())
+        self.player_three = Player("Jane", ComputerAI())
+        self.player_four = Player("Smith", ComputerAI())
 
         # Initialize the trick pile and deck
         self.trick_pile = []
@@ -99,6 +108,8 @@ class Hearts:
 
         # Variables to keep track of passing order and whether hearts have been broken
         self.hearts_broken = False
+        self.current_suit = suits["Clubs"]
+        self.current_player = None
         self.passing_order = "Left"
         self.passing_order_list = ["Left", "Right", "Straight", "None"]
 
@@ -249,6 +260,9 @@ class Hearts:
         self.player_four.sort_hand()
 
         self.setup_ui()
+        return
+
+    def play_cards(self):
 
         return
 
@@ -271,11 +285,13 @@ class Hearts:
         print values[card_ui.card.value], "of", suits[card_ui.card.suit]
         if self.state is "Start":
             x = 0
-            #print self.state
+            x += 1
+            # print self.state
 
         elif self.state is "Setup":
             x = 0
-            #print self.state
+            x += 1
+            # print self.state
 
         elif self.state is "Passing":
             card = card_ui.card
@@ -289,7 +305,7 @@ class Hearts:
                     self.player_one.passing.remove(card)
                     card_ui.move(0, 25, 0)
 
-            #print self.state
+            # print self.state
 
         elif self.state is "Play":
             card = card_ui.card
@@ -303,60 +319,70 @@ class Hearts:
                         self.player_one.selected_card.move(0, 25, 0)
                     card_ui.move(0, -25, 0)
                     self.player_one.selected_card = card_ui
-            #print self.state
+            # print self.state
 
         elif self.state is "Scoring":
             x = 0
-            #print self.state
+            x += 1
+            # print self.state
 
         elif self.state is "End":
             x = 0
-            #print self.state
+            x += 1
+            # print self.state
 
         return
 
     def handle_keypress(self, event):
         if self.state is "Start":
             x = 0
-            #print self.state
+            x += 1
+            # print self.state
 
         elif self.state is "Setup":
             x = 0
-            #print self.state
+            x += 1
+            # print self.state
 
         elif self.state is "Passing":
-            if event.type is pygame.KEYDOWN:
+            if event.type is pygame.KEYUP:
                 if len(self.player_one.passing) is 3:
                     self.passing_round()
                     self.state = "Play"
 
-            #print self.state
+            # print self.state
 
         elif self.state is "Play":
+            if event.type is pygame.KEYUP:
+                if self.player_one.selected_card is not None:
+                    return
             x = 0
-            #print self.state
+            x += 1
+            # print self.state
 
         elif self.state is "Scoring":
             x = 0
-            #print self.state
+            x += 1
+            # print self.state
 
         elif self.state is "End":
             x = 0
-            #print self.state
+            x += 1
+            # print self.state
 
         return
 
     def play(self):
         while True:
             if self.state is "Start":
-                #print self.state
+                # print self.state
 
                 self.passing_order = "Left"
 
                 self.state = "Setup"
 
             elif self.state is "Setup":
-                #print self.state
+                # print self.state
 
                 self.deck = Cards.CardEngine.create_deck(suits, values)
                 self.shuffled_deck = Cards.CardEngine.shuffle(self.deck)
@@ -368,7 +394,7 @@ class Hearts:
                 self.state = "Passing"
 
             elif self.state is "Passing":
-                #print self.state
+                # print self.state
 
                 if self.passing_order is "None":
                     self.passing_order = "Left"
@@ -376,15 +402,18 @@ class Hearts:
 
             elif self.state is "Play":
                 x = 0
-                #print self.state
+                x += 1
+                # print self.state
 
             elif self.state is "Scoring":
                 x = 0
-                #print self.state
+                x += 1
+                # print self.state
 
             elif self.state is "End":
                 x = 0
-                #print self.state
+                x += 1
+                # print self.state
 
             Cards.CardEngine.update()
             Cards.CardEngine.render()
