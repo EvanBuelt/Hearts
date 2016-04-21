@@ -1,16 +1,8 @@
-__author__ = 'Evan'
 import sys
 import pygame
 import random
 import UI
 import Hitbox
-
-class MouseButton:
-    LEFT = 1
-    MIDDLE = 2
-    RIGHT = 3
-    WHEEL_UP = 4
-    WHEEL_DOWN = 5
 
 
 class EventHandler:

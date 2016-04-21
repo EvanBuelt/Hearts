@@ -1,4 +1,3 @@
-__author__ = 'Evan'
 import pygame
 
 pygame.font.init()
