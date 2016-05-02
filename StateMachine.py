@@ -179,8 +179,42 @@ class PassingState(State):
 class PlayingState(State):
     def __init__(self, game, name):
         State.__init__(self, game, name)
+        self.currentPlayer = None
+        self.currentSuit = "Club"
+        self.trickPile = []
+        self.heartsBroken = False
+        self.currentCard = None
+
+        self.player_one_x = 25
+        self.player_one_y = 25
+
+        self.player_two_x = 125
+        self.player_two_y = 125
+
+        self.player_three_x = 225
+        self.player_three_y = 225
+
+        self.player_four_x = 325
+        self.player_four_y = 325
 
     def enter(self):
+
+        self.currentSuit = "Club"
+        self.trickPile = []
+        self.heartsBroken = False
+
+        for i in range(0, 13):
+            if self.game.player_one.hand[i].suit is 1 and self.game.player_one.hand[i].value is 2:
+                self.currentPlayer = self.game.player_one
+
+            elif self.game.player_two.hand[i].suit is 1 and self.game.player_two.hand[i].value is 2:
+                self.currentPlayer = self.game.player_two
+
+            elif self.game.player_three.hand[i].suit is 1 and self.game.player_three.hand[i].value is 2:
+                self.currentPlayer = self.game.player_three
+
+            elif self.game.player_four.hand[i].suit is 1 and self.game.player_four.hand[i].value is 2:
+                self.currentPlayer = self.game.player_four
         # TO DO:
         # Set current player as player with 2 of clubs
         # Setup hearts not broken
@@ -193,6 +227,12 @@ class PlayingState(State):
         self.next_state = None
 
     def handle_keypress(self, event):
+        if self.currentPlayer is self.game.player_one:
+            if self.currentCard is not None:
+                self.trickPile.append(self.currentCard)
+                self.currentCard = None
+                self.currentPlayer = self.game.player_two
+
         # Check if current turn
         #   Check if card is selected
         #       Place card in trick pile
@@ -200,12 +240,49 @@ class PlayingState(State):
         return
 
     def handle_card_click(self, card_ui):
+        if self.currentPlayer is self.game.player_one:
+            if card_ui.card in self.game.player_one.hand:
+                if card_ui is self.currentCard:
+                    card_ui.move(0, 25, 0)
+                    self.currentCard = None
+                else:
+                    if self.currentCard is not None:
+                        self.currentCard.move(0, 25, 0)
+                    card_ui.move(0, -25, 0)
+                    self.currentCard = card_ui
         # Check if card is in player's hand
         #   Check if card is valid to play
         #       Update selected card
         return
 
     def update(self):
+        if len(self.trickPile) is 4:
+            return
+
+        if self.currentPlayer is not self.game.player_one:
+            card = self.currentPlayer.ai.play_card(self.currentSuit)
+            self.trickPile.append(card)
+
+            for card_ui in self.game.card_ui_elements:
+                if card is card_ui.card:
+                    if self.currentPlayer is self.game.player_two:
+                        card_ui.set_location(25, 25)
+
+                    elif self.currentPlayer is self.game.player_three:
+                        card_ui.set_location(50, 50)
+
+                    elif self.currentPlayer is self.game.player_four:
+                        card_ui.set_location(75, 75)
+
+            if self.currentPlayer is self.game.player_two:
+                self.currentPlayer = self.game.player_three
+
+            elif self.currentPlayer is self.game.player_three:
+                self.currentPlayer = self.game.player_four
+
+            elif self.currentPlayer is self.game.player_four:
+                self.currentPlayer = self.game.player_one
+
         # If computer player can play a card, let computer play card
         # If all players have played a card, evaluate to see who won trick pile
         #   Determine if hearts were played.
