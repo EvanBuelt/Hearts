@@ -25,9 +25,10 @@ class EventHandler:
 
 
 class StandardPlayingCard:
-    def __init__(self, suit, value):
+    def __init__(self, suit, value, owner=None):
         self.suit = suit
         self.value = value
+        self.owner = owner
 
 
 class Card(UI.UIElement):

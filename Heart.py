@@ -1,7 +1,8 @@
 import CardEngine.Engine as Cards
 import CardEngine.UI as UI
 import pygame
-import StateMachine
+import StateMachine.StateMachine as StateMachine
+import StateMachine.State as State
 
 suits = {1: "Clubs",
          2: "Diamonds",
@@ -65,6 +66,16 @@ class Player:
                     temp = self.hand[j]
                     self.hand[j] = self.hand[j + 1]
                     self.hand[j + 1] = temp
+
+    def set_hand_owner(self):
+        for card in self.hand:
+            card.owner = self
+
+    def pass_cards(self):
+        return self.ai.pass_cards(self)
+
+    def play_card(self, current_suit):
+        return self.ai.play_card(self, current_suit)
 
 
 class HumanAI:
@@ -149,10 +160,10 @@ class Hearts:
         # Setup State Machine for handling game play
         self.stateMachine = StateMachine.StateMachine()
 
-        self.stateMachine.add_state(StateMachine.SetupState(self, "Setup"), "Setup")
-        self.stateMachine.add_state(StateMachine.PassingState(self, "Passing"), "Passing")
-        self.stateMachine.add_state(StateMachine.PlayingState(self, "Playing"), "Playing")
-        self.stateMachine.add_state(StateMachine.ScoringState(self, "Scoring"), "Scoring")
+        self.stateMachine.add_state(State.SetupState(self, "Setup"), "Setup")
+        self.stateMachine.add_state(State.PassingState(self, "Passing"), "Passing")
+        self.stateMachine.add_state(State.PlayingState(self, "Playing"), "Playing")
+        self.stateMachine.add_state(State.ScoringState(self, "Scoring"), "Scoring")
 
         self.stateMachine.set_initial_state("Setup")
 
@@ -178,7 +189,11 @@ class Hearts:
             Cards.CardEngine.deal_cards(self.shuffled_deck, self.player_two.hand, 1)
             Cards.CardEngine.deal_cards(self.shuffled_deck, self.player_three.hand, 1)
             Cards.CardEngine.deal_cards(self.shuffled_deck, self.player_four.hand, 1)
-        return
+
+        self.player_one.set_hand_owner()
+        self.player_two.set_hand_owner()
+        self.player_three.set_hand_owner()
+        self.player_four.set_hand_owner()
 
     def setup_ui(self):
         one_x = 212
@@ -201,6 +216,7 @@ class Hearts:
                 card_ui.set_location(one_x, one_y)
                 card_ui.visible = True
                 card_ui.front_view = True
+                card_ui.card.owner = self.player_one
                 one_x += 25
 
             elif card in self.player_two.hand:
@@ -208,6 +224,7 @@ class Hearts:
                 card_ui.set_location(two_x, two_y)
                 card_ui.visible = True
                 card_ui.front_view = False
+                card_ui.card.owner = self.player_two
                 two_y += 25
 
             elif card in self.player_three.hand:
@@ -215,6 +232,7 @@ class Hearts:
                 card_ui.set_location(three_x, three_y)
                 card_ui.visible = True
                 card_ui.front_view = False
+                card_ui.card.owner = self.player_three
                 three_x -= 25
 
             elif card in self.player_four.hand:
@@ -222,6 +240,7 @@ class Hearts:
                 card_ui.set_location(four_x, four_y)
                 card_ui.visible = True
                 card_ui.front_view = False
+                card_ui.card.owner = self.player_four
                 four_y -= 25
 
         return
