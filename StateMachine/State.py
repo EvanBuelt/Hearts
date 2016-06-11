@@ -263,14 +263,23 @@ class PlayingState(State):
     def handle_card_click(self, card_ui):
         if self.currentPlayer is self.game.player_one:
             if card_ui.card in self.game.player_one.hand:
+                # If card that was clicked is currently selected, unselect it
                 if card_ui is self.currentCard:
                     card_ui.move(0, 25, 0)
                     self.currentCard = None
+                # If card that was clicked was not currently selected, select new card if it matches suit (any if None)
                 else:
-                    if self.currentCard is not None:
-                        self.currentCard.move(0, 25, 0)
-                    card_ui.move(0, -25, 0)
-                    self.currentCard = card_ui
+                    if self.currentSuit is None:
+                        if self.currentCard is not None:
+                            # Positive means moving down on screen (away from top)
+                            self.currentCard.move(0, 25, 0)
+                        card_ui.move(0, -25, 0)
+                        self.currentCard = card_ui
+                    elif card_ui.card.suit is self.currentSuit:
+                        if self.currentCard is not None:
+                            self.currentCard.move(0, 25, 0)
+                        card_ui.move(0, -25, 0)
+                        self.currentCard = card_ui
         # Check if card is in player's hand
         #   Check if card is valid to play
         #       Update selected card
@@ -279,22 +288,29 @@ class PlayingState(State):
     def update(self):
         if len(self.trickPile) is 4:
             highest_card = None
-            highest_value = 0
+            highest_value = -1
             trick_player = None
 
             for card_ui in self.trickPile:
-                if card_ui.card is self.currentSuit:
+                card_ui.set_location(1200, 1200)
+                card_ui.visible = False
+                if card_ui.card.suit is self.currentSuit:
                     if (card_ui.card.value % 14) > highest_value:
                         highest_card = card_ui
 
-            trick_player = highest_card.owner
+            trick_player = highest_card.card.owner
 
             while len(self.trickPile) > 0:
                 card = self.trickPile[0]
                 Cards.CardEngine.transfer_card(card, self.trickPile, trick_player.tricks)
 
+            self.currentSuit = None
+
         elif self.currentPlayer is not self.game.player_one:
             card = self.currentPlayer.play_card(self.currentSuit)
+
+            if self.currentSuit is None:
+                self.currentSuit = card.suit
 
             for card_ui in self.game.card_ui_elements:
                 if card is card_ui.card:

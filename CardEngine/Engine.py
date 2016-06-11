@@ -373,7 +373,7 @@ class CardEngine:
     @staticmethod
     def transfer_card(card, source, destination):
         if card in source:
-            source.pop(card)
+            source.remove(card)
             destination.append(card)
 
     @staticmethod
