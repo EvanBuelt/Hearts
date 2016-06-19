@@ -189,6 +189,24 @@ class PassingState(State):
 
 
 class PlayingState(State):
+
+    # Data for playing the round
+    currentPlayer = None
+    currentSuit = None
+    trickPile = []
+    heartsBroken = False
+    currentCard = None
+
+    # Data for where each player places card for trick pile
+    player_one_x = 0
+    player_one_y = 0
+    player_two_x = 0
+    player_two_y = 0
+    player_three_x = 0
+    player_three_y = 0
+    player_four_x = 0
+    player_four_y = 0
+
     def __init__(self, game, name):
         State.__init__(self, game, name)
         self.currentPlayer = None
@@ -197,20 +215,7 @@ class PlayingState(State):
         self.heartsBroken = False
         self.currentCard = None
 
-        # Size of card: 75w 105h
-        # Size of screen: 800w 800h
-
-        self.player_one_x = 362
-        self.player_one_y = 400
-
-        self.player_two_x = 400
-        self.player_two_y = 438
-
-        self.player_three_x = 438
-        self.player_three_y = 400
-
-        self.player_four_x = 400
-        self.player_four_y = 362
+        self.set_trick_pile_locations()
 
     def enter(self):
 
@@ -248,38 +253,25 @@ class PlayingState(State):
     def handle_keypress(self, event):
         if self.currentPlayer is self.game.player_one:
             if self.currentCard is not None:
-                self.game.player_one.hand.remove(self.currentCard.card)
-                self.currentCard.set_location(self.player_one_x, self.player_one_y)
-                self.trickPile.append(self.currentCard)
-                self.currentCard = None
-                self.currentPlayer = self.game.player_four
+                self.move_card_to_trick_pile(self.currentCard.card)
+                self.set_next_player()
 
-        # Check if current turn
-        #   Check if card is selected
-        #       Place card in trick pile
-        #       Let next player play card
+                self.game.player_one.hand.remove(self.currentCard.card)
+                self.currentCard = None
         return
 
     def handle_card_click(self, card_ui):
         if self.currentPlayer is self.game.player_one:
             if card_ui.card in self.game.player_one.hand:
                 # If card that was clicked is currently selected, unselect it
-                if card_ui is self.currentCard:
-                    card_ui.move(0, 25, 0)
-                    self.currentCard = None
-                # If card that was clicked was not currently selected, select new card if it matches suit (any if None)
-                else:
-                    if self.currentSuit is None:
-                        if self.currentCard is not None:
-                            # Positive means moving down on screen (away from top)
-                            self.currentCard.move(0, 25, 0)
-                        card_ui.move(0, -25, 0)
-                        self.currentCard = card_ui
-                    elif card_ui.card.suit is self.currentSuit:
-                        if self.currentCard is not None:
-                            self.currentCard.move(0, 25, 0)
-                        card_ui.move(0, -25, 0)
-                        self.currentCard = card_ui
+                if self.currentSuit is None:
+                    self.play_deselect_card(self.currentCard)
+                    self.player_select_card(card_ui)
+                elif card_ui.card.suit is self.currentSuit:
+                    if card_ui is self.currentCard:
+                        self.play_deselect_card(self.currentCard)
+                    else:
+                        self.player_select_card(card_ui)
         # Check if card is in player's hand
         #   Check if card is valid to play
         #       Update selected card
@@ -287,16 +279,7 @@ class PlayingState(State):
 
     def update(self):
         if len(self.trickPile) is 4:
-            highest_card = None
-            highest_value = -1
-            trick_player = None
-
-            for card_ui in self.trickPile:
-                card_ui.set_location(1200, 1200)
-                card_ui.visible = False
-                if card_ui.card.suit is self.currentSuit:
-                    if (card_ui.card.value % 14) > highest_value:
-                        highest_card = card_ui
+            highest_card = self.find_highest_card()
 
             trick_player = highest_card.card.owner
 
@@ -312,38 +295,87 @@ class PlayingState(State):
             if self.currentSuit is None:
                 self.currentSuit = card.suit
 
-            for card_ui in self.game.card_ui_elements:
-                if card is card_ui.card:
-                    self.trickPile.append(card_ui)
-                    if self.currentPlayer is self.game.player_two:
-                        # print "Hey"
-                        card_ui.set_location(self.player_two_x, self.player_two_y)
-                        card_ui.front_view = True
+            self.move_card_to_trick_pile(card)
+            self.set_next_player()
 
-                    elif self.currentPlayer is self.game.player_three:
-                        card_ui.set_location(self.player_three_x, self.player_three_y)
-                        card_ui.front_view = True
-
-                    elif self.currentPlayer is self.game.player_four:
-                        card_ui.set_location(self.player_four_x, self.player_four_y)
-                        card_ui.front_view = True
-
-            if self.currentPlayer is self.game.player_two:
-                self.currentPlayer = self.game.player_one
-
-            elif self.currentPlayer is self.game.player_three:
-                self.currentPlayer = self.game.player_two
-
-            elif self.currentPlayer is self.game.player_four:
-                self.currentPlayer = self.game.player_three
-
-        # If computer player can play a card, let computer play card
-        # If all players have played a card, evaluate to see who won trick pile
-        #   Determine if hearts were played.
-        #       If so, update hearts_broken to True
-        #   Place center trick pile into players trick pile
-        #
         return self.next_state
+
+    def set_trick_pile_locations(self):
+
+        # Size of card: 75w 105h
+        # Size of screen: 800w 800h
+
+        self.player_one_x = 362
+        self.player_one_y = 400
+
+        self.player_two_x = 400
+        self.player_two_y = 362
+
+        self.player_three_x = 438
+        self.player_three_y = 400
+
+        self.player_four_x = 400
+        self.player_four_y = 438
+        return
+
+    def move_card_to_trick_pile(self, card):
+        for card_ui in self.game.card_ui_elements:
+            if card is card_ui.card:
+                self.trickPile.append(card_ui)
+                if self.currentPlayer is self.game.player_one:
+                    card_ui.set_location(self.player_one_x, self.player_one_y)
+                    card_ui.front_view = True
+
+                if self.currentPlayer is self.game.player_two:
+                    card_ui.set_location(self.player_two_x, self.player_two_y)
+                    card_ui.front_view = True
+
+                elif self.currentPlayer is self.game.player_three:
+                    card_ui.set_location(self.player_three_x, self.player_three_y)
+                    card_ui.front_view = True
+
+                elif self.currentPlayer is self.game.player_four:
+                    card_ui.set_location(self.player_four_x, self.player_four_y)
+                    card_ui.front_view = True
+        return
+
+    def set_next_player(self):
+        if self.currentPlayer is self.game.player_one:
+            self.currentPlayer = self.game.player_four
+
+        elif self.currentPlayer is self.game.player_two:
+            self.currentPlayer = self.game.player_one
+
+        elif self.currentPlayer is self.game.player_three:
+            self.currentPlayer = self.game.player_two
+
+        elif self.currentPlayer is self.game.player_four:
+            self.currentPlayer = self.game.player_three
+
+    def find_highest_card(self):
+        highest_card = None
+        highest_value = -1
+
+        for card_ui in self.trickPile:
+            card_ui.set_location(1200, 1200)
+            card_ui.visible = False
+            if card_ui.card.suit is self.currentSuit:
+                if (card_ui.card.value % 14) > highest_value:
+                    highest_card = card_ui
+
+        return highest_card
+
+    def player_select_card(self, card_ui):
+        card_ui.move(0, -25, 0)
+        self.currentCard = card_ui
+        return
+
+    def play_deselect_card(self, card_ui):
+        if self.currentCard is card_ui:
+            if card_ui is not None:
+                card_ui.move(0, 25, 0)
+            self.currentCard = None
+        return
 
 
 class ScoringState(State):

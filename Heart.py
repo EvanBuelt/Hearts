@@ -199,14 +199,14 @@ class Hearts:
         one_x = 212
         one_y = 645
 
-        two_x = 75
-        two_y = 275
+        two_x = 150
+        two_y = 200
 
         three_x = 588
         three_y = 150
 
-        four_x = 720
-        four_y = 500
+        four_x = 650
+        four_y = 575
 
         for card_ui in self.card_ui_elements:
             card = card_ui.card
@@ -220,7 +220,7 @@ class Hearts:
                 one_x += 25
 
             elif card in self.player_two.hand:
-                card_ui.angle_degrees = 90
+                card_ui.angle_degrees = 270
                 card_ui.set_location(two_x, two_y)
                 card_ui.visible = True
                 card_ui.front_view = False
@@ -236,7 +236,7 @@ class Hearts:
                 three_x -= 25
 
             elif card in self.player_four.hand:
-                card_ui.angle_degrees = 270
+                card_ui.angle_degrees = 90
                 card_ui.set_location(four_x, four_y)
                 card_ui.visible = True
                 card_ui.front_view = False
