@@ -252,6 +252,7 @@ class PlayingState(State):
 
     def handle_keypress(self, event):
         if self.currentPlayer is self.game.player_one:
+            self.currentCard = self.currentPlayer.handle_keypress(event)
             if self.currentCard is not None:
                 self.move_card_to_trick_pile(self.currentCard.card)
                 self.set_next_player()
@@ -262,19 +263,7 @@ class PlayingState(State):
 
     def handle_card_click(self, card_ui):
         if self.currentPlayer is self.game.player_one:
-            if card_ui.card in self.game.player_one.hand:
-                # If card that was clicked is currently selected, unselect it
-                if self.currentSuit is None:
-                    self.play_deselect_card(self.currentCard)
-                    self.player_select_card(card_ui)
-                elif card_ui.card.suit is self.currentSuit:
-                    if card_ui is self.currentCard:
-                        self.play_deselect_card(self.currentCard)
-                    else:
-                        self.player_select_card(card_ui)
-        # Check if card is in player's hand
-        #   Check if card is valid to play
-        #       Update selected card
+            self.currentPlayer.handle_card_click(card_ui, self.currentSuit)
         return
 
     def update(self):
@@ -370,7 +359,7 @@ class PlayingState(State):
         self.currentCard = card_ui
         return
 
-    def play_deselect_card(self, card_ui):
+    def player_deselect_card(self, card_ui):
         if self.currentCard is card_ui:
             if card_ui is not None:
                 card_ui.move(0, 25, 0)

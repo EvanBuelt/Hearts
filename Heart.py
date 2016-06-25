@@ -52,6 +52,8 @@ class Player:
         self.passing = []
         self.selected_card = None
 
+        self.ai.set_player(self)
+
     def sort_hand(self):
         for i in range(0, len(self.hand)):
             for j in range(0, i):
@@ -77,10 +79,22 @@ class Player:
     def play_card(self, current_suit):
         return self.ai.play_card(self, current_suit)
 
+    def handle_card_click(self, card_ui, current_suit):
+        return self.ai.handle_card_click(card_ui, current_suit)
+
+    def handle_keypress(self, event):
+        return self.ai.handle_keypress(event)
+
 
 class HumanAI:
+    player = None
+    _selected_card_ui = None
+
     def __init__(self):
         return
+
+    def set_player(self, player):
+        self.player = player
 
     def pass_card(self, human_player, card):
         return
@@ -88,10 +102,57 @@ class HumanAI:
     def play_card(self, computer_player, current_suit):
         return
 
+    def handle_card_click(self, card_ui, current_suit):
+        if card_ui is self._selected_card_ui:
+            self.player_deselect_card(card_ui)
+
+        elif card_ui.card in self.player.hand:
+            if self.is_suit_in_hand(current_suit):
+                if card_ui.card.suit is current_suit:
+                    self.player_deselect_card(self._selected_card_ui)
+                    self.player_select_card(card_ui)
+
+            else:
+                self.player_deselect_card(self._selected_card_ui)
+                self.player_select_card(card_ui)
+
+        return
+
+    def handle_keypress(self, event):
+        card_ui = self._selected_card_ui
+        self._selected_card_ui = None
+        return card_ui
+
+    def is_suit_in_hand(self, current_suit):
+        suit_in_hand = False
+        if self.player is not None:
+
+            for card in self.player.hand:
+                if card.suit is current_suit:
+                    suit_in_hand = True
+
+        return suit_in_hand
+
+    def player_select_card(self, card_ui):
+        card_ui.move(0, -25, 0)
+        self._selected_card_ui = card_ui
+        return
+
+    def player_deselect_card(self, card_ui):
+        if self._selected_card_ui is card_ui:
+            if card_ui is not None:
+                card_ui.move(0, 25, 0)
+            self._selected_card_ui = None
+        return
+
 
 class ComputerAI:
+    player = None
     def __init__(self):
         return
+
+    def set_player(self, player):
+        self.player = player
 
     def pass_cards(self, computer_player):
         passing = computer_player.passing
@@ -110,6 +171,12 @@ class ComputerAI:
                 return hand.pop(i)
 
         return hand.pop()
+
+    def handle_card_click(self, card_ui, current_suit):
+        return
+
+    def handle_keypress(self, event):
+        return
 
 
 class Hearts:
