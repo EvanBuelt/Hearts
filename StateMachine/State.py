@@ -278,6 +278,9 @@ class PlayingState(State):
 
             self.currentSuit = None
 
+        elif self.is_done():
+            self.next_state = "Scoring"
+
         elif self.currentPlayer is not self.game.player_one:
             card = self.currentPlayer.play_card(self.currentSuit)
 
@@ -354,6 +357,19 @@ class PlayingState(State):
 
         return highest_card
 
+    def is_done(self):
+        num_cards = 0
+        num_cards += len(self.game.player_one.hand)
+        num_cards += len(self.game.player_two.hand)
+        num_cards += len(self.game.player_three.hand)
+        num_cards += len(self.game.player_four.hand)
+
+        if num_cards is 0:
+            return True
+
+        else:
+            return False
+
     def player_select_card(self, card_ui):
         card_ui.move(0, -25, 0)
         self.currentCard = card_ui
@@ -368,6 +384,12 @@ class PlayingState(State):
 
 
 class ScoringState(State):
+
+    player_one_points = 0
+    player_two_points = 0
+    player_three_points = 0
+    player_four_points = 0
+
     def __init__(self, game, name):
         State.__init__(self, game, name)
 
@@ -378,7 +400,47 @@ class ScoringState(State):
         #   Shooting the moon: One player gets all hearts and Queen of Spades
         #       All other players receive 26 points
         # Determine if anyone has 100 points or more
-        #   Determine winner: Lowest Points
+        #   Determine winner: Lowest
+
+        player_one_temp_points = self.get_points(self.game.player_one)
+        player_two_temp_points = self.get_points(self.game.player_two)
+        player_three_temp_points = self.get_points(self.game.player_three)
+        player_four_temp_points = self.get_points(self.game.player_four)
+
+        if player_one_temp_points is 26:
+            player_one_temp_points = 0
+            player_two_temp_points = 26
+            player_three_temp_points = 26
+            player_four_temp_points = 26
+
+        elif player_two_temp_points is 26:
+            player_one_temp_points = 26
+            player_two_temp_points = 0
+            player_three_temp_points = 26
+            player_four_temp_points = 26
+
+        elif player_three_temp_points is 26:
+            player_one_temp_points = 26
+            player_two_temp_points = 26
+            player_three_temp_points = 0
+            player_four_temp_points = 26
+
+        elif player_four_temp_points is 26:
+            player_one_temp_points = 26
+            player_two_temp_points = 26
+            player_three_temp_points = 26
+            player_four_temp_points = 0
+
+        self.player_one_points += player_one_temp_points
+        self.player_two_points += player_two_temp_points
+        self.player_three_points += player_three_temp_points
+        self.player_four_points += player_four_temp_points
+
+        print self.player_one_points
+        print self.player_two_points
+        print self.player_three_points
+        print self.player_four_points
+
         return
 
     def exit(self):
@@ -392,3 +454,15 @@ class ScoringState(State):
 
     def update(self):
         return self.next_state
+
+    def get_points(self, player):
+        points = 0
+        for card_ui in player.tricks:
+            card = card_ui.card
+            if card.suit is Heart.suits_str["Hearts"]:
+                points += 1
+            elif card.suit is Heart.suits_str["Spades"]:
+                if card.value is Heart.values_str["Queen"]:
+                    points += 13
+
+        return points
