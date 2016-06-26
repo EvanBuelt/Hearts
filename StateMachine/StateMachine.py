@@ -23,7 +23,6 @@ class StateMachine:
         return
 
     def handle_keypress(self, event):
-        # print event.key
         self.current_state.handle_keypress(event)
         return
 
@@ -32,7 +31,6 @@ class StateMachine:
         return
 
     def update(self):
-        # print self.current_state.name
         key = self.current_state.update()
         next_state = self.state_list.get(key, None)
         if next_state is not None:

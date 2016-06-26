@@ -315,7 +315,6 @@ class Hearts:
     def create_card_ui(self):
         z = 0
         for card in self.deck:
-            print card.value, card.suit
             front_sprite_name = values[card.value] + " of " + suits[card.suit]
             back_sprite_name = "Card Back 1"
 

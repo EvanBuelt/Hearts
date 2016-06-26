@@ -77,6 +77,12 @@ class PassingState(State):
         # Passing states are 'Left', 'Right', 'Straight', 'None', in that order.
 
     def enter(self):
+
+        self.game.player_one.passing = []
+        self.game.player_two_passing = []
+        self.game.player_three_passing = []
+        self.game.player_four_passing = []
+
         if self.passing_order is "None":
             self.passing_order = "Left"
             self.next_state = "Playing"
@@ -254,6 +260,9 @@ class PlayingState(State):
         if self.currentPlayer is self.game.player_one:
             self.currentCard = self.currentPlayer.handle_keypress(event)
             if self.currentCard is not None:
+                if self.currentSuit is None:
+                    self.currentSuit = self.currentCard.card.suit
+
                 self.move_card_to_trick_pile(self.currentCard.card)
                 self.set_next_player()
 
@@ -271,8 +280,10 @@ class PlayingState(State):
             highest_card = self.find_highest_card()
 
             trick_player = highest_card.card.owner
+            self.currentPlayer = highest_card.card.owner
 
             while len(self.trickPile) > 0:
+
                 card = self.trickPile[0]
                 Cards.CardEngine.transfer_card(card, self.trickPile, trick_player.tricks)
 
@@ -349,11 +360,13 @@ class PlayingState(State):
         highest_value = -1
 
         for card_ui in self.trickPile:
+
             card_ui.set_location(1200, 1200)
             card_ui.visible = False
             if card_ui.card.suit is self.currentSuit:
-                if (card_ui.card.value % 14) > highest_value:
+                if card_ui.card.value > highest_value:
                     highest_card = card_ui
+                    highest_value = card_ui.card.value
 
         return highest_card
 
@@ -436,14 +449,25 @@ class ScoringState(State):
         self.player_three_points += player_three_temp_points
         self.player_four_points += player_four_temp_points
 
+        print "Points:"
         print self.player_one_points
         print self.player_two_points
         print self.player_three_points
         print self.player_four_points
+        print ""
 
+        if self.any_player_lost():
+            self.next_state = None
+
+        else:
+            self.next_state = "Setup"
         return
 
     def exit(self):
+        self.game.player_one.tricks = []
+        self.game.player_two.tricks = []
+        self.game.player_three.tricks = []
+        self.game.player_four.tricks = []
         self.next_state = None
 
     def handle_keypress(self, event):
@@ -454,6 +478,43 @@ class ScoringState(State):
 
     def update(self):
         return self.next_state
+
+    def any_player_lost(self):
+        if self.player_one_points >= 100:
+            return True
+
+        if self.player_two_points >= 100:
+            return True
+
+        if self.player_three_points >= 100:
+            return True
+
+        if self.player_four_points >= 100:
+            return True
+
+        return False
+
+    def determine_lowest_points(self):
+        lowest_points = 150
+        lowest_player = None
+
+        if self.player_one_points < lowest_points:
+            lowest_points = self.player_one_points
+            lowest_player = self.game.player_one
+
+        if self.player_two_points < lowest_points:
+            lowest_points = self.player_two_points
+            lowest_player = self.game.player_two
+
+        if self.player_three_points < lowest_points:
+            lowest_points = self.player_three_points
+            lowest_player = self.game.player_three
+
+        if self.player_four_points < lowest_points:
+            lowest_player = self.game.player_four
+
+        print lowest_player.name
+        return lowest_player
 
     def get_points(self, player):
         points = 0
