@@ -107,6 +107,7 @@ class HumanAI:
             self.player_deselect_card(card_ui)
 
         elif card_ui.card in self.player.hand:
+            card_ui.play_sound()
             if self.is_suit_in_hand(current_suit):
                 if card_ui.card.suit is current_suit:
                     self.player_deselect_card(self._selected_card_ui)
@@ -309,6 +310,9 @@ class Hearts:
                 card_ui.front_view = False
                 card_ui.card.owner = self.player_four
                 four_y -= 25
+
+            if card.value is values_str["Ace"] and card.suit is suits_str["Spades"]:
+                card_ui.load_sound_file("Sound/The Ace of Spades.wav")
 
         return
 

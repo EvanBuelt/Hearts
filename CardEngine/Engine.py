@@ -73,6 +73,10 @@ class Card(UI.UIElement):
 
         self._hitbox = Hitbox.SquareHitbox(x, y, width, height, self._angle)
 
+        # Setup sound to playback when requested
+        self._sound = None
+        self._start_time = 0
+
         # Variables for keeping track of mouse events
         self._lastMouseDownOverCard = False
         self._mouseOverCard = False
@@ -159,6 +163,15 @@ class Card(UI.UIElement):
 
         self._update()
 
+    def play_sound(self):
+        if self._sound is not None:
+            if (pygame.time.get_ticks() - self._start_time) > (self._sound.get_length() * 1000):
+                self._sound.play()
+                self._start_time = pygame.time.get_ticks()
+
+    def load_sound_file(self, file_path):
+        self._sound = pygame.mixer.Sound(file_path)
+
     def _prop_set_callback_function(self, new_callback_function):
         self._callbackFunction = new_callback_function
         self._update()
@@ -185,11 +198,17 @@ class Card(UI.UIElement):
     def _prop_get_angle_degrees(self):
         return self._angle
 
+    def _prop_get_sound(self):
+        return self._sound
+
+    def _prop_set_sound(self, sound):
+        self._sound = sound
+
     callbackFunction = property(_prop_get_callback_function, _prop_set_callback_function)
     front_view = property(_prop_get_front_view, _prop_set_front_view)
     angle_radians = property(_prop_get_angle_radians, _prop_set_angle_radians)
     angle_degrees = property(_prop_get_angle_degrees, _prop_set_angle_degrees)
-
+    sound = property(_prop_get_sound, _prop_set_sound)
 
 class CardEngine:
     # Pygame Display
