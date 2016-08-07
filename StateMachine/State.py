@@ -350,10 +350,10 @@ class PlayingState(State):
 
             while len(self.trickPile) > 0:
 
-
-                card = self.trickPile[0]
-                CardLogging.log_file.log('PlayingState: Transfer card: ' + str(card.value) + ' of ' + str(card.suit))
-                Cards.CardEngine.transfer_card(card, self.trickPile, trick_player.tricks)
+                card_ui = self.trickPile[0]
+                CardLogging.log_file.log('PlayingState: Transfer card: ' + Heart.values[card_ui.card.value] + ' of ' +
+                                         Heart.suits[card_ui.card.suit])
+                Cards.CardEngine.transfer_card(card_ui, self.trickPile, trick_player.tricks)
 
             self.currentSuit = None
 

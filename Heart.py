@@ -1,8 +1,8 @@
 import CardEngine.Engine as Cards
-import CardEngine.UI as UI
 import pygame
 import StateMachine.StateMachine as StateMachine
 import StateMachine.State as State
+import CardEngine.CardLogging as CardLogging
 
 suits = {1: "Clubs",
          2: "Diamonds",
@@ -156,12 +156,14 @@ class ComputerAI:
         self.player = player
 
     def pass_cards(self, computer_player):
-        passing = computer_player.passing
-        hand = computer_player.hand
+        CardLogging.log_file.log('ComputerAI: ' + self.player.name + ': pass cards')
 
-        passing.append(hand[0])
-        passing.append(hand[1])
-        passing.append(hand[2])
+        passing = computer_player.passing
+
+        cards_to_pass = self.determine_cards_to_pass()
+        for i in range(0, 3):
+            passing.append(cards_to_pass[i])
+
         return
 
     def play_card(self, computer_player, current_suit):
@@ -178,6 +180,116 @@ class ComputerAI:
 
     def handle_keypress(self, event):
         return
+
+    def determine_cards_to_pass(self):
+
+        cards_to_pass = []
+
+        # Pass queen of spades if it's in hand
+        queen_of_spades_exists, card = self.has_card(values_str["Queen"], suits_str["Spades"])
+        if queen_of_spades_exists:
+            cards_to_pass.append(card)
+
+        # Pass ace of spades if it's in hand
+        ace_of_spades_exists, card = self.has_card(values_str["Ace"], suits_str["Spades"])
+        if ace_of_spades_exists:
+            cards_to_pass.append(card)
+
+        # Pass king of spades if it's in hand
+        king_of_spades_exists, card = self.has_card(values_str["King"], suits_str["Spades"])
+        if king_of_spades_exists:
+            cards_to_pass.append(card)
+
+        # Pass highest hearts in hand
+        hearts_list = self.get_highest_cards(suits_str["Hearts"], 3 - len(cards_to_pass))
+        while len(hearts_list) > 0:
+            cards_to_pass.append(hearts_list.pop())
+
+        num_hearts = self.get_number_of_cards_with_suit(suits_str["Hearts"])
+        num_clubs = self.get_number_of_cards_with_suit(suits_str["Clubs"])
+        num_diamonds = self.get_number_of_cards_with_suit(suits_str["Diamonds"])
+        num_spades = self.get_number_of_cards_with_suit(suits_str["Spades"])
+
+        # If the computer can get rid of all hearts, get rid of them
+        if num_hearts <= (3 - len(cards_to_pass)):
+            hearts_list = self.get_highest_cards(suits_str["Hearts"], 3 - len(cards_to_pass))
+            while len(hearts_list) > 0:
+                cards_to_pass.append(hearts_list.pop())
+
+        # If the computer can get rid of all clubs, get rid of them
+        if num_clubs <= (3 - len(cards_to_pass)):
+            clubs_list = self.get_highest_cards(suits_str["Clubs"], 3 - len(cards_to_pass))
+            while len(clubs_list) > 0:
+                cards_to_pass.append(clubs_list.pop())
+
+        # If the computer can get rid of all diamonds, get rid of them
+        if num_diamonds <= (3 - len(cards_to_pass)):
+            diamonds_list = self.get_highest_cards(suits_str["Diamonds"], 3 - len(cards_to_pass))
+            while len(diamonds_list) > 0:
+                cards_to_pass.append(diamonds_list.pop())
+
+        # If the computer can get rid of all spades, get rid of them
+        if num_spades <= (3 - len(cards_to_pass)):
+            spades_list = self.get_highest_cards(suits_str["Spades"], 3 - len(cards_to_pass))
+            while len(spades_list) > 0:
+                cards_to_pass.append(spades_list.pop())
+
+        # Get rid of highest diamonds
+        diamonds_list = self.get_highest_cards(suits_str["Diamonds"], 3 - len(cards_to_pass))
+        while len(diamonds_list) > 0:
+            cards_to_pass.append(diamonds_list.pop())
+
+        # Get rid of highest clubs
+        clubs_list = self.get_highest_cards(suits_str["Clubs"], 3 - len(cards_to_pass))
+        while len(clubs_list) > 0:
+            cards_to_pass.append(clubs_list.pop())
+
+        # Get rid of highest hearts
+        hearts_list = self.get_highest_cards(suits_str["Hearts"], 3 - len(cards_to_pass))
+        while len(hearts_list) > 0:
+            cards_to_pass.append(hearts_list.pop())
+
+        # Get rid of highest spades
+        spades_list = self.get_highest_cards(suits_str["Spades"], 3 - len(cards_to_pass))
+        while len(spades_list) > 0:
+            cards_to_pass.append(spades_list.pop())
+
+        return cards_to_pass
+        # The logic to determine what to pass is as follows:
+        # Pass the Queen of Spades
+        # Pass the King and Ace of Spades
+        # Pass Highest Hearts
+        # Remove a suit if possible
+        # Pass Highest Diamonds, Clubs, Hearts, Spades in that order
+
+    def has_card(self, suit, value):
+        for card in self.player.hand:
+            if card.suit is suit:
+                if card.value is value:
+                    return True, card
+
+        return False, None
+
+    def get_highest_cards(self, suit, number_cards_to_move):
+        possible_card_list = []
+        card_list = []
+
+        for card in self.player.hand:
+            if card.suit is suit:
+                possible_card_list.append(card)
+
+        while (len(card_list) < number_cards_to_move) and (len(possible_card_list) > 0):
+            card_list.append(possible_card_list.pop())
+
+        return card_list
+
+    def get_number_of_cards_with_suit(self, suit):
+        number = 0
+        for card in self.player.hand:
+            if card.suit is suit:
+                number += 1
+        CardLogging.log_file.log('ComputerAI: Number of ' + suits[suit] + ': ' + str(number))
+        return number
 
 
 class Hearts:
