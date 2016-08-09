@@ -116,6 +116,11 @@ class PassingState(State):
         self.game.player_three.set_hand_owner()
         self.game.player_four.set_hand_owner()
 
+        self.game.player_one.passing = []
+        self.game.player_two.passing = []
+        self.game.player_three.passing = []
+        self.game.player_four.passing = []
+
         CardLogging.log_file.log('PassingState: Set next state to None')
         self.next_state = None
 
@@ -167,6 +172,11 @@ class PassingState(State):
         player_two.pass_cards()
         player_three.pass_cards()
         player_four.pass_cards()
+
+        CardLogging.log_file.log('PassingState: P1 has ' + str(len(player_one.passing)) + ' passing cards')
+        CardLogging.log_file.log('PassingState: P2 has ' + str(len(player_two.passing)) + ' passing cards')
+        CardLogging.log_file.log('PassingState: P3 has ' + str(len(player_three.passing)) + ' passing cards')
+        CardLogging.log_file.log('PassingState: P4 has ' + str(len(player_four.passing)) + ' passing cards')
 
         # Syntactic sugar for cards to pass
         player_one_pass = player_one.passing

@@ -108,7 +108,13 @@ class HumanAI:
 
         elif card_ui.card in self.player.hand:
             card_ui.play_sound()
-            if self.is_suit_in_hand(current_suit):
+            if self.has_two_of_clubs():
+                if card_ui.card.suit is suits_str["Clubs"]:
+                    if card_ui.card.value is values_str["2"]:
+                        self.player_deselect_card(self._selected_card_ui)
+                        self.player_select_card(card_ui)
+
+            elif self.is_suit_in_hand(current_suit):
                 if card_ui.card.suit is current_suit:
                     self.player_deselect_card(self._selected_card_ui)
                     self.player_select_card(card_ui)
@@ -123,6 +129,13 @@ class HumanAI:
         card_ui = self._selected_card_ui
         self._selected_card_ui = None
         return card_ui
+
+    def has_two_of_clubs(self):
+        for card in self.player.hand:
+            if card.suit is suits_str["Clubs"]:
+                if card.value is values_str["2"]:
+                    return True
+        return False
 
     def is_suit_in_hand(self, current_suit):
         suit_in_hand = False
