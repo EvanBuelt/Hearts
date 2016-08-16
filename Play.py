@@ -1,4 +1,4 @@
-import Heart as Game
+from Core import Heart as Game
 
 game = Game.Hearts()
 game.play()

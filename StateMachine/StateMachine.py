@@ -1,4 +1,5 @@
-import CardEngine.CardLogging as CardLogging
+from Core import CardLogging
+
 
 class StateMachine:
     def __init__(self):

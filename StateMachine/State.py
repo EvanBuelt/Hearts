@@ -1,7 +1,9 @@
-import CardEngine.Engine as Cards
-import Heart
 import pygame
-import CardEngine.CardLogging as CardLogging
+
+import CardEngine.Engine as Cards
+from Core import CardLogging
+from Core import Constant
+
 
 # InheritanceError is used to ensure certain class methods are inherited.
 class InheritanceError(Exception):
@@ -14,10 +16,12 @@ class InheritanceError(Exception):
 
 class State:
     def __init__(self, game, name):
+        CardLogging.log_file.log('---State __init__() enter---')
         self.game = game
         self.name = name
         self.next_state = None
         CardLogging.log_file.log('State: Initializing ' + name)
+        CardLogging.log_file.log('---State __init__() exit---')
         return
 
     def enter(self):
@@ -38,11 +42,32 @@ class State:
 
 class SetupState(State):
     def __init__(self, game, name):
+        CardLogging.log_file.log('---SetupState __init__() enter---')
         State.__init__(self, game, name)
+        self.card_values = [Constant.values_str["2"],
+                            Constant.values_str["3"],
+                            Constant.values_str["4"],
+                            Constant.values_str["5"],
+                            Constant.values_str["6"],
+                            Constant.values_str["7"],
+                            Constant.values_str["8"],
+                            Constant.values_str["9"],
+                            Constant.values_str["10"],
+                            Constant.values_str["Jack"],
+                            Constant.values_str["Queen"],
+                            Constant.values_str["King"],
+                            Constant.values_str["Ace"]]
+
+        self.card_suits = [Constant.suits_str["Clubs"],
+                           Constant.suits_str["Diamonds"],
+                           Constant.suits_str["Spades"],
+                           Constant.suits_str["Hearts"]]
+
+        CardLogging.log_file.log('---SetupState __init__() exit---')
 
     def enter(self):
-        CardLogging.log_file.log('SetupState: Setup enter')
-        self.game.deck = Cards.CardEngine.create_deck(Heart.suits, Heart.values)
+        CardLogging.log_file.log('---SetupState enter() enter---')
+        self.game.deck = Cards.CardEngine.create_deck(self.card_suits, self.card_values)
         self.game.shuffled_deck = Cards.CardEngine.shuffle(self.game.deck)
         CardLogging.log_file.log('SetupState: Size of deck: ' + str(len(self.game.deck)))
         CardLogging.log_file.log('SetupState: Size of shuffled deck: ' + str(len(self.game.shuffled_deck)))
@@ -57,8 +82,10 @@ class SetupState(State):
 
         self.next_state = "Passing"
         CardLogging.log_file.log('State: Set next state to Passing')
+        CardLogging.log_file.log('---SetupState enter() exit---')
 
     def exit(self):
+        CardLogging.log_file.log('---SetupState exit() enter---')
         CardLogging.log_file.log('SetupState: Setup exit')
         self.game.player_one.set_hand_owner()
         self.game.player_two.set_hand_owner()
@@ -67,37 +94,46 @@ class SetupState(State):
 
         CardLogging.log_file.log('SetupState: Set next state to None')
         self.next_state = None
+        CardLogging.log_file.log('---SetupState exit() exit---')
 
     def handle_keypress(self, event):
+        CardLogging.log_file.log('---SetupState handle_keypress() enter---')
         CardLogging.log_file.log('SetupState: Keypress handled in Setup')
+        CardLogging.log_file.log('---SetupState handle_keypress() exit---')
         return
 
     def handle_card_click(self, card_ui):
+        CardLogging.log_file.log('---SetupState handle_card_click() enter---')
         CardLogging.log_file.log('SetupState: Card Click handled in Setup')
+        CardLogging.log_file.log('---SetupState handle_card_click() exit---')
         return
 
     def update(self):
-        CardLogging.log_file.log('SetupState: Setup update')
+        CardLogging.log_file.log('---SetupState update() enter---')
+        CardLogging.log_file.log('---SetupState update() exit---')
         return self.next_state
 
 
 class PassingState(State):
     def __init__(self, game, name):
+        CardLogging.log_file.log('---PassingState __init__() enter---')
         State.__init__(self, game, name)
         self.passing_order = "Left"
         CardLogging.log_file.log('PassingState: Passing order set to ' + self.passing_order)
+        CardLogging.log_file.log('---PassingState __init__() exit---')
         # Passing states are 'Left', 'Right', 'Straight', 'None', in that order.
 
     def enter(self):
+        CardLogging.log_file.log('---PassingState enter() enter---')
 
         CardLogging.log_file.log('PassingState: Passing enter')
 
         CardLogging.log_file.log('PassingState: Players passing hand set to empty list ')
 
         self.game.player_one.passing = []
-        self.game.player_two_passing = []
-        self.game.player_three_passing = []
-        self.game.player_four_passing = []
+        self.game.player_two.passing = []
+        self.game.player_three.passing = []
+        self.game.player_four.passing = []
 
         if self.passing_order is "None":
             self.passing_order = "Left"
@@ -106,39 +142,41 @@ class PassingState(State):
             CardLogging.log_file.log('PassingState: Passing order set to ' + self.passing_order)
             CardLogging.log_file.log('PassingState: Next state set to ' + self.next_state)
 
+        CardLogging.log_file.log('---PassingState enter() exit---')
         return
 
     def exit(self):
-        CardLogging.log_file.log('PassingState: Passing exit')
+        CardLogging.log_file.log('---PassingState exit() enter---')
 
         self.game.player_one.set_hand_owner()
         self.game.player_two.set_hand_owner()
         self.game.player_three.set_hand_owner()
         self.game.player_four.set_hand_owner()
 
-        self.game.player_one.passing = []
-        self.game.player_two.passing = []
-        self.game.player_three.passing = []
-        self.game.player_four.passing = []
-
         CardLogging.log_file.log('PassingState: Set next state to None')
         self.next_state = None
+        CardLogging.log_file.log('---PassingState exit() exit---')
 
     def handle_keypress(self, event):
+        CardLogging.log_file.log('---PassingState handle_keypress() enter---')
         CardLogging.log_file.log('PassingState: Keypress handled in Passing')
         # Possible to have a card click before transition to the next state.
         if self.next_state is not None:
+            CardLogging.log_file.log('---PassingState handle_keypress() exit---')
             return
 
         if event.type is pygame.KEYUP:
             if len(self.game.player_one.passing) is 3:
                 self.passing_round()
                 self.next_state = "Playing"
+        CardLogging.log_file.log('---PassingState handle_keypress() exit---')
 
     def handle_card_click(self, card_ui):
+        CardLogging.log_file.log('---PassingState handle_card_click() enter---')
         CardLogging.log_file.log('PassingState: Card click handled in Passing')
         # Possible to have a card click before transition to the next state.
         if self.next_state is not None:
+            CardLogging.log_file.log('---PassingState handle_card_click() exit---')
             return
 
         card = card_ui.card
@@ -155,11 +193,15 @@ class PassingState(State):
                 self.game.player_one.passing.remove(card)
                 CardLogging.log_file.log('PassingState: Move card down')
                 card_ui.move(0, 25, 0)
+        CardLogging.log_file.log('---PassingState handle_card_click() exit---')
 
     def update(self):
+        # CardLogging.log_file.log('---PassingState update() enter---')
+        # CardLogging.log_file.log('---PassingState update() exit---')
         return self.next_state
 
     def passing_round(self):
+        CardLogging.log_file.log('---PassingState passing_round() enter---')
         CardLogging.log_file.log('PassingState: Pass cards')
 
         # Syntactic sugar
@@ -238,29 +280,13 @@ class PassingState(State):
         player_four.sort_hand()
 
         self.game.setup_ui()
+        CardLogging.log_file.log('---PassingState passing_round() exit---')
         return
 
 
 class PlayingState(State):
-
-    # Data for playing the round
-    currentPlayer = None
-    currentSuit = None
-    trickPile = []
-    heartsBroken = False
-    currentCard = None
-
-    # Data for where each player places card for trick pile
-    player_one_x = 0
-    player_one_y = 0
-    player_two_x = 0
-    player_two_y = 0
-    player_three_x = 0
-    player_three_y = 0
-    player_four_x = 0
-    player_four_y = 0
-
     def __init__(self, game, name):
+        CardLogging.log_file.log('---PlayingState __init__() enter---')
         State.__init__(self, game, name)
 
         CardLogging.log_file.log('PlayingState: Set current suit to Current Player')
@@ -270,63 +296,50 @@ class PlayingState(State):
         CardLogging.log_file.log('PlayingState: Set current card to None')
 
         self.currentPlayer = None
-        self.currentSuit = Heart.suits_str["Clubs"]
+        self.currentSuit = Constant.suits_str["Clubs"]
         self.trickPile = []
         self.heartsBroken = False
         self.currentCard = None
 
+        self.player_one_x = 0
+        self.player_one_y = 0
+
+        self.player_two_x = 0
+        self.player_two_y = 0
+
+        self.player_three_x = 0
+        self.player_three_y = 0
+
+        self.player_four_x = 0
+        self.player_four_y = 0
+
         self.set_trick_pile_locations()
+        CardLogging.log_file.log('---PlayingState __init__() exit---')
 
     def enter(self):
-
-        CardLogging.log_file.log('PlayingState: Playing enter')
+        CardLogging.log_file.log('---PlayingState enter() enter---')
 
         CardLogging.log_file.log('PlayingState: Set current suit to Clubs')
         CardLogging.log_file.log('PlayingState: Set trick pile to empty list')
         CardLogging.log_file.log('PlayingState: Set hearts broken to False')
         CardLogging.log_file.log('PlayingState: Set current card to None')
 
-        self.currentSuit = Heart.suits_str["Clubs"]
+        self.currentSuit = Constant.suits_str["Clubs"]
         self.trickPile = []
         self.heartsBroken = False
         self.currentCard = None
 
-        for i in range(0, 13):
-            CardLogging.log_file.log('PlayingState: Check card ' + str(i + 1) + ' is 2 of clubs P1 to P4')
-
-            if self.game.player_one.hand[i].suit is Heart.suits_str["Clubs"] \
-                    and self.game.player_one.hand[i].value is Heart.values_str["2"]:
-                CardLogging.log_file.log('PlayingState: 2 of clubs found P1')
-                self.currentPlayer = self.game.player_one
-
-            elif self.game.player_two.hand[i].suit is Heart.suits_str["Clubs"] \
-                    and self.game.player_two.hand[i].value is Heart.values_str["2"]:
-                CardLogging.log_file.log('PlayingState: 2 of clubs found P2')
-                self.currentPlayer = self.game.player_two
-
-            elif self.game.player_three.hand[i].suit is Heart.suits_str["Clubs"] \
-                    and self.game.player_three.hand[i].value is Heart.values_str["2"]:
-                CardLogging.log_file.log('PlayingState: 2 of clubs found P3')
-                self.currentPlayer = self.game.player_three
-
-            elif self.game.player_four.hand[i].suit is Heart.suits_str["Clubs"] \
-                    and self.game.player_four.hand[i].value is Heart.values_str["2"]:
-                CardLogging.log_file.log('PlayingState: 2 of clubs found P4')
-                self.currentPlayer = self.game.player_four
-        # TO DO:
-        # Set current player as player with 2 of clubs
-        # Setup hearts not broken
-        # Setup trick pile
-        # Setup current suit as clubs
-
+        self.currentPlayer = self.find_player_with_two_of_spades()
+        CardLogging.log_file.log('---PlayingState enter() exit---')
         return
 
     def exit(self):
-        CardLogging.log_file.log('PlayingState: Playing exit')
+        CardLogging.log_file.log('---PlayingState exit() enter---')
+        CardLogging.log_file.log('---PlayingState exit() exit---')
         self.next_state = None
 
     def handle_keypress(self, event):
-        CardLogging.log_file.log('PlayingState: Playing handle keypress')
+        CardLogging.log_file.log('---PlayingState handle_keypress() enter---')
         if self.currentPlayer is self.game.player_one:
             self.currentCard = self.currentPlayer.handle_keypress(event)
             if self.currentCard is not None:
@@ -338,56 +351,34 @@ class PlayingState(State):
 
                 self.game.player_one.hand.remove(self.currentCard.card)
                 self.currentCard = None
+        CardLogging.log_file.log('---PlayingState handle_keypress() exit---')
         return
 
     def handle_card_click(self, card_ui):
-        CardLogging.log_file.log('PlayingState: Playing handle card click')
+        CardLogging.log_file.log('---PlayingState handle_card_click() enter---')
         if self.currentPlayer is self.game.player_one:
             self.currentPlayer.handle_card_click(card_ui, self.currentSuit)
+        CardLogging.log_file.log('---PlayingState handle_card_click() exit---')
         return
 
     def update(self):
-        CardLogging.log_file.log('PlayingState: update')
+        # CardLogging.log_file.log('---PlayingState update() enter---')
         if len(self.trickPile) is 4:
-            CardLogging.log_file.log('PlayingState: Trick pile has 4 cards')
-            highest_card = self.find_highest_card()
-
-            trick_player = highest_card.card.owner
-            self.currentPlayer = highest_card.card.owner
-
-            CardLogging.log_file.log('PlayingState: Trick player is ' + self.currentPlayer.name)
-            CardLogging.log_file.log('PlayingState: Playing handle card click')
-
-            while len(self.trickPile) > 0:
-
-                card_ui = self.trickPile[0]
-                CardLogging.log_file.log('PlayingState: Transfer card: ' + Heart.values[card_ui.card.value] + ' of ' +
-                                         Heart.suits[card_ui.card.suit])
-                Cards.CardEngine.transfer_card(card_ui, self.trickPile, trick_player.tricks)
-
-            self.currentSuit = None
+            self.move_trick_pile_to_player()
 
         elif self.is_done():
             CardLogging.log_file.log('PlayingState: Setting next state to Scoring')
             self.next_state = "Scoring"
 
         elif self.currentPlayer is not self.game.player_one:
-            CardLogging.log_file.log('PlayingState: Allow computer to play card')
-            card = self.currentPlayer.play_card(self.currentSuit)
+            self.handle_computer_player_turn()
 
-            if self.currentSuit is None:
-                self.currentSuit = card.suit
-                CardLogging.log_file.log('PlayingState: Set suit to ' + str(self.currentSuit))
-
-            self.move_card_to_trick_pile(card)
-            self.set_next_player()
-
+        # CardLogging.log_file.log('---PlayingState update() exit---')
         return self.next_state
 
     def set_trick_pile_locations(self):
 
-        CardLogging.log_file.log('PlayingState: Set trick pile locations')
-
+        CardLogging.log_file.log('---PlayingState set_trick_pile_locations() enter---')
         # Size of card: 75w 105h
         # Size of screen: 800w 800h
 
@@ -411,12 +402,12 @@ class PlayingState(State):
 
         CardLogging.log_file.log('PlayingState: P4 ' + str(self.player_four_x) + ',' + str(self.player_four_y))
 
+        CardLogging.log_file.log('---PlayingState set_trick_pile_locations() exit---')
         return
 
     def move_card_to_trick_pile(self, card):
 
-        CardLogging.log_file.log('PlayingState: Move card to trick pile')
-
+        CardLogging.log_file.log('---PlayingState move_card_to_trick_pile() enter---')
         for card_ui in self.game.card_ui_elements:
             if card is card_ui.card:
                 self.trickPile.append(card_ui)
@@ -439,10 +430,72 @@ class PlayingState(State):
                     CardLogging.log_file.log('PlayingState: P4: ' + str(card.value) + ' of ' + str(card.suit))
                     card_ui.set_location(self.player_four_x, self.player_four_y)
                     card_ui.front_view = True
+
+        CardLogging.log_file.log('---PlayingState move_card_to_trick_pile() exit---')
         return
 
-    def set_next_player(self):
+    def move_trick_pile_to_player(self):
+        CardLogging.log_file.log('---PlayingState move_trick_pile_to_player() enter---')
+        CardLogging.log_file.log('PlayingState: Trick pile has 4 cards')
+        highest_card = self.find_highest_card()
 
+        trick_player = highest_card.card.owner
+        self.currentPlayer = highest_card.card.owner
+
+        CardLogging.log_file.log('PlayingState: Trick player is ' + self.currentPlayer.name)
+        CardLogging.log_file.log('PlayingState: Playing handle card click')
+
+        while len(self.trickPile) > 0:
+
+            card_ui = self.trickPile[0]
+            CardLogging.log_file.log('PlayingState: Transfer card: ' + Constant.values[card_ui.card.value] + ' of ' +
+                                     Constant.suits[card_ui.card.suit])
+            Cards.CardEngine.transfer_card(card_ui, self.trickPile, trick_player.tricks)
+        CardLogging.log_file.log('---PlayingState move_trick_pile_to_player() exit---')
+        self.currentSuit = None
+
+    def find_player_with_two_of_spades(self):
+        CardLogging.log_file.log('---PlayingState find_player_with_two_of_spades() enter---')
+        for i in range(0, 13):
+            CardLogging.log_file.log('PlayingState: Check card ' + str(i + 1) + ' is 2 of clubs P1 to P4')
+
+            if self.game.player_one.hand[i].suit is Constant.suits_str["Clubs"] \
+                    and self.game.player_one.hand[i].value is Constant.values_str["2"]:
+                CardLogging.log_file.log('PlayingState: 2 of clubs found P1')
+                return self.game.player_one
+
+            elif self.game.player_two.hand[i].suit is Constant.suits_str["Clubs"] \
+                    and self.game.player_two.hand[i].value is Constant.values_str["2"]:
+                CardLogging.log_file.log('PlayingState: 2 of clubs found P2')
+                return self.game.player_two
+
+            elif self.game.player_three.hand[i].suit is Constant.suits_str["Clubs"] \
+                    and self.game.player_three.hand[i].value is Constant.values_str["2"]:
+                CardLogging.log_file.log('PlayingState: 2 of clubs found P3')
+                return self.game.player_three
+
+            elif self.game.player_four.hand[i].suit is Constant.suits_str["Clubs"] \
+                    and self.game.player_four.hand[i].value is Constant.values_str["2"]:
+                CardLogging.log_file.log('PlayingState: 2 of clubs found P4')
+                return self.game.player_four
+        CardLogging.log_file.log('---PlayingState find_player_with_two_of_spades() exit---')
+        return None
+
+    def handle_computer_player_turn(self):
+        CardLogging.log_file.log('---PlayingState handle_computer_player_turn() enter---')
+        CardLogging.log_file.log('PlayingState: Allow computer to play card')
+        card = self.currentPlayer.play_card(self.currentSuit)
+
+        if self.currentSuit is None:
+            self.currentSuit = card.suit
+            CardLogging.log_file.log('PlayingState: Set suit to ' + str(self.currentSuit))
+
+        self.move_card_to_trick_pile(card)
+        self.set_next_player()
+        CardLogging.log_file.log('---PlayingState handle_computer_player_turn() exit---')
+
+    def set_next_player(self):
+        CardLogging.log_file.log('---PlayingState set_next_player() enter---')
         if self.currentPlayer is self.game.player_one:
             CardLogging.log_file.log('PlayingState: Set next player to P4')
             self.currentPlayer = self.game.player_four
@@ -458,9 +511,10 @@ class PlayingState(State):
         elif self.currentPlayer is self.game.player_four:
             CardLogging.log_file.log('PlayingState: Set next player to P3')
             self.currentPlayer = self.game.player_three
+        CardLogging.log_file.log('---PlayingState set_next_player() exit---')
 
     def find_highest_card(self):
-        CardLogging.log_file.log('PlayingState: Find highest card')
+        CardLogging.log_file.log('---PlayingState find_highest_card() enter---')
         highest_card = None
         highest_value = -1
 
@@ -476,11 +530,11 @@ class PlayingState(State):
                     highest_card = card_ui
                     highest_value = card_ui.card.value
                     CardLogging.log_file.log('PlayingState: Value of card is ' + str(highest_value))
-
+        CardLogging.log_file.log('---PlayingState find_highest_card() exit---')
         return highest_card
 
     def is_done(self):
-        CardLogging.log_file.log('PlayingState: Check if done')
+        CardLogging.log_file.log('---PlayingState is_done() enter---')
         num_cards = 0
         num_cards += len(self.game.player_one.hand)
         num_cards += len(self.game.player_two.hand)
@@ -491,38 +545,45 @@ class PlayingState(State):
 
         if num_cards is 0:
             CardLogging.log_file.log('PlayingState: No card found')
+            CardLogging.log_file.log('---PlayingState is_done() exit---')
             return True
 
         else:
             CardLogging.log_file.log('PlayingState: Cards found')
+            CardLogging.log_file.log('---PlayingState is_done() exit---')
             return False
 
     def player_select_card(self, card_ui):
+        CardLogging.log_file.log('---PlayingState player_select_card() enter---')
         card = card_ui.card
         CardLogging.log_file.log('PlayingState: Move: ' + str(card.value) + ' of ' + str(card.suit) + ' up')
         card_ui.move(0, -25, 0)
         self.currentCard = card_ui
+        CardLogging.log_file.log('---PlayingState player_select_card() exit---')
         return
 
     def player_deselect_card(self, card_ui):
+        CardLogging.log_file.log('---PlayingState player_deselect_card() enter---')
         if self.currentCard is card_ui:
             if card_ui is not None:
                 card = card_ui.card
                 CardLogging.log_file.log('PlayingState: Move: ' + str(card.value) + ' of ' + str(card.suit) + ' down')
                 card_ui.move(0, 25, 0)
             self.currentCard = None
+        CardLogging.log_file.log('---PlayingState player_deselect_card() exit---')
         return
 
 
 class ScoringState(State):
 
-    player_one_points = 0
-    player_two_points = 0
-    player_three_points = 0
-    player_four_points = 0
-
     def __init__(self, game, name):
+        CardLogging.log_file.log('---ScoringState __init__() enter---')
         State.__init__(self, game, name)
+        self.player_one_points = 0
+        self.player_two_points = 0
+        self.player_three_points = 0
+        self.player_four_points = 0
+        CardLogging.log_file.log('---ScoringState __init__() exit---')
 
     def enter(self):
         # Evaluate points each player receives as follows:
@@ -532,6 +593,8 @@ class ScoringState(State):
         #       All other players receive 26 points
         # Determine if anyone has 100 points or more
         #   Determine winner: Lowest
+
+        CardLogging.log_file.log('---ScoringState enter() enter---')
 
         player_one_round_points = self.get_points(self.game.player_one)
         player_two_round_points = self.get_points(self.game.player_two)
@@ -543,33 +606,9 @@ class ScoringState(State):
         CardLogging.log_file.log('ScoringState: P3 Temp Points: ' + str(player_three_round_points))
         CardLogging.log_file.log('ScoringState: P4 Temp Points: ' + str(player_four_round_points))
 
-        if player_one_round_points is 26:
-            CardLogging.log_file.log('ScoringState: P1 shot the moon')
-            player_one_round_points = 0
-            player_two_round_points = 26
-            player_three_round_points = 26
-            player_four_round_points = 26
-
-        elif player_two_round_points is 26:
-            CardLogging.log_file.log('ScoringState: P2 shot the moon')
-            player_one_round_points = 26
-            player_two_round_points = 0
-            player_three_round_points = 26
-            player_four_round_points = 26
-
-        elif player_three_round_points is 26:
-            CardLogging.log_file.log('ScoringState: P3 shot the moon')
-            player_one_round_points = 26
-            player_two_round_points = 26
-            player_three_round_points = 0
-            player_four_round_points = 26
-
-        elif player_four_round_points is 26:
-            CardLogging.log_file.log('ScoringState: P4 shot the moon')
-            player_one_round_points = 26
-            player_two_round_points = 26
-            player_three_round_points = 26
-            player_four_round_points = 0
+        player_one_round_points, player_two_round_points, player_three_round_points, player_four_round_points = \
+            self.handle_shooting_the_moon(player_one_round_points, player_two_round_points,
+                                          player_three_round_points, player_four_round_points)
 
         self.player_one_points += player_one_round_points
         self.player_two_points += player_two_round_points
@@ -588,52 +627,63 @@ class ScoringState(State):
         else:
             CardLogging.log_file.log('ScoringState: Setting next state to Setup.')
             self.next_state = "Setup"
+        CardLogging.log_file.log('---ScoringState enter() exit---')
         return
 
     def exit(self):
-        CardLogging.log_file.log('ScoringState: exit')
+        CardLogging.log_file.log('---ScoringState exit() enter---')
         CardLogging.log_file.log('ScoringState: set P1-P4 trick piles to empty list')
         self.game.player_one.tricks = []
         self.game.player_two.tricks = []
         self.game.player_three.tricks = []
         self.game.player_four.tricks = []
         self.next_state = None
+        CardLogging.log_file.log('---ScoringState exit() exit---')
 
     def handle_keypress(self, event):
-        CardLogging.log_file.log('ScoringState: handle key press')
+        CardLogging.log_file.log('---ScoringState handle_keypress() enter---')
+        CardLogging.log_file.log('---ScoringState handle_keypress() exit---')
         return
 
     def handle_card_click(self, card_ui):
-        CardLogging.log_file.log('ScoringState: handle card click')
+        CardLogging.log_file.log('---ScoringState handle_card_click() enter---')
+        CardLogging.log_file.log('---ScoringState handle_card_click() exit---')
         return
 
     def update(self):
-        CardLogging.log_file.log('ScoringState: update')
+        # CardLogging.log_file.log('---ScoringState update() enter---')
+        # CardLogging.log_file.log('---ScoringState update() exit---')
         return self.next_state
 
     def any_player_lost(self):
+        CardLogging.log_file.log('---ScoringState any_player_lost() enter---')
         CardLogging.log_file.log('ScoringState: any player lost?')
         if self.player_one_points >= 100:
             CardLogging.log_file.log('ScoringState: P1 had 100 or more points')
+            CardLogging.log_file.log('---ScoringState any_player_lost() exit---')
             return True
 
         if self.player_two_points >= 100:
             CardLogging.log_file.log('ScoringState: P2 had 100 or more points')
+            CardLogging.log_file.log('---ScoringState any_player_lost() exit---')
             return True
 
         if self.player_three_points >= 100:
             CardLogging.log_file.log('ScoringState: P3 had 100 or more points')
+            CardLogging.log_file.log('---ScoringState any_player_lost() exit---')
             return True
 
         if self.player_four_points >= 100:
             CardLogging.log_file.log('ScoringState: P4 had 100 or more points')
+            CardLogging.log_file.log('---ScoringState any_player_lost() exit---')
             return True
 
         CardLogging.log_file.log('ScoringState: No player had 100 or more points')
+        CardLogging.log_file.log('---ScoringState any_player_lost() exit---')
         return False
 
     def determine_lowest_points(self):
-        CardLogging.log_file.log('ScoringState: Determine lowest points')
+        CardLogging.log_file.log('---ScoringState determine_lowest_points() enter---')
         lowest_points = 150
         lowest_player = None
 
@@ -659,19 +709,56 @@ class ScoringState(State):
 
         CardLogging.log_file.log('ScoringState: Player with lowest points: ' + lowest_player.name)
         CardLogging.log_file.log('ScoringState: Points: ' + str(lowest_points))
+
+        CardLogging.log_file.log('---ScoringState determine_lowest_points() exit---')
         return lowest_player
 
     def get_points(self, player):
+        CardLogging.log_file.log('---ScoringState get_points() enter---')
         points = 0
         for card_ui in player.tricks:
             card = card_ui.card
-            if card.suit is Heart.suits_str["Hearts"]:
+            if card.suit is Constant.suits_str["Hearts"]:
                 CardLogging.log_file.log('ScoringState: Hearts found')
                 points += 1
-            elif card.suit is Heart.suits_str["Spades"]:
-                if card.value is Heart.values_str["Queen"]:
+            elif card.suit is Constant.suits_str["Spades"]:
+                if card.value is Constant.values_str["Queen"]:
                     CardLogging.log_file.log('ScoringState: Queen of Spades found')
                     points += 13
 
         CardLogging.log_file.log('ScoringState: ' + player.name + ': ' + str(points))
+        CardLogging.log_file.log('---ScoringState get_points() exit---')
         return points
+
+    def handle_shooting_the_moon(self, p1_round_points, p2_round_points, p3_round_points, p4_round_points):
+        CardLogging.log_file.log('---ScoringState handle_shooting_the_moon() enter---')
+        if p1_round_points is 26:
+            CardLogging.log_file.log('ScoringState: P1 shot the moon')
+            p1_round_points = 0
+            p2_round_points = 26
+            p3_round_points = 26
+            p4_round_points = 26
+
+        elif p2_round_points is 26:
+            CardLogging.log_file.log('ScoringState: P2 shot the moon')
+            p1_round_points = 26
+            p2_round_points = 0
+            p3_round_points = 26
+            p4_round_points = 26
+
+        elif p3_round_points is 26:
+            CardLogging.log_file.log('ScoringState: P3 shot the moon')
+            p1_round_points = 26
+            p2_round_points = 26
+            p3_round_points = 0
+            p4_round_points = 26
+
+        elif p4_round_points is 26:
+            CardLogging.log_file.log('ScoringState: P4 shot the moon')
+            p1_round_points = 26
+            p2_round_points = 26
+            p3_round_points = 26
+            p4_round_points = 0
+
+        CardLogging.log_file.log('---ScoringState handle_shooting_the_moon() exit---')
+        return p1_round_points, p2_round_points, p3_round_points, p4_round_points
