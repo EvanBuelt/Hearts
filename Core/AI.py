@@ -35,8 +35,8 @@ class Player:
     def pass_cards(self):
         return self.ai.pass_cards(self)
 
-    def play_card(self, current_suit):
-        return self.ai.play_card(self, current_suit)
+    def play_card(self, current_suit, trick_pile):
+        return self.ai.play_card(current_suit, trick_pile)
 
     def handle_card_click(self, card_ui, current_suit):
         return self.ai.handle_card_click(card_ui, current_suit)
@@ -58,7 +58,7 @@ class HumanAI:
     def pass_card(self, human_player, card):
         return
 
-    def play_card(self, computer_player, current_suit):
+    def play_card(self, current_suit, trick_pile):
         return
 
     def handle_card_click(self, card_ui, current_suit):
@@ -130,6 +130,7 @@ class ComputerAI:
     def pass_cards(self, computer_player):
         CardLogging.log_file.log('ComputerAI: ' + self.player.name + ': pass cards')
 
+        computer_player.passing = []
         passing = computer_player.passing
 
         cards_to_pass = self.determine_cards_to_pass()
@@ -138,13 +139,66 @@ class ComputerAI:
 
         return
 
-    def play_card(self, computer_player, current_suit):
-        hand = computer_player.hand
+    def play_card(self, current_suit, trick_pile):
+        hand = self.player.hand
 
-        for i in range(0, len(hand)):
-            if hand[i].suit is current_suit:
-                return hand.pop(i)
+        if current_suit is Constant.suits_str["Hearts"]:
+            return
 
+        elif current_suit is Constant.suits_str["Spades"]:
+            return
+
+        elif current_suit is Constant.suits_str["Clubs"]:
+            return
+
+        elif current_suit is Constant.suits_str["Diamonds"]:
+            return
+
+        elif current_suit is None:
+            return
+
+        else:
+            for i in range(0, len(hand)):
+                if hand[i].suit is current_suit:
+                    return hand.pop(i)
+
+        '''
+        Determine suit to follow and has suit:
+        -Hearts:
+            -Play highest hearts lower than highest heart
+            -Play lowest heart
+        -Spades:
+            -Play Queen of Spades if King or Ace is in trick pile
+            -Play King or Ace of spades if last player to have a spades
+            -Play highest non-queen spade lower than highest spade
+            -Play lowest spade
+        -Clubs
+            -Play highest club if first turn
+            -Play highest club lower than highest club
+            -Play lowest club
+        -Diamonds:
+            -Play highest diamond lower than highest diamond
+            -Play lowest diamond
+        -None:
+            -Play lowest Spade
+            -Play lowest Heart (if broken)
+            -Play lowest Club
+            -Play lowest Diamond
+
+        If suit is not in hand:
+        -Spades:
+            -Play Queen of Spades
+            -Play King or Ace of Spades
+
+        -Hearts:
+            -Play highest heart 7 or above
+
+        -Play highest card 10 or above
+        -Hearts:
+            -Play highest hearts
+
+        -Play highest card of suit with lowest number of cards
+        '''
         return hand.pop()
 
     def handle_card_click(self, card_ui, current_suit):
@@ -153,6 +207,7 @@ class ComputerAI:
     def handle_keypress(self, event):
         return
 
+    # Functions used to pass Cards
     def determine_cards_to_pass(self):
 
         cards_to_pass = []
@@ -262,3 +317,13 @@ class ComputerAI:
                 number += 1
         CardLogging.log_file.log('ComputerAI: Number of ' + Constant.suits[suit] + ': ' + str(number))
         return number
+
+    def find_highest_card_under_value(self, suit, trick_pile):
+
+        card_list = []
+
+        for card_ui in self.player.hand:
+            if card_ui.suit is suit:
+                card_list.append(card_ui)
+
+        return
