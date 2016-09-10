@@ -362,32 +362,48 @@ class CardEngine:
     @staticmethod
     def create_deck(suits, values, special_cards=None):
         deck = []
+
+        # Create a standard playing card with given suit and value
         for suit in suits:
             for value in values:
                 deck.append(StandardPlayingCard(suit, value))
+
+        # Add any special cards, such as jokers
         if special_cards is not None:
             for card in special_cards:
                 deck.append(card)
+
         return deck
 
     @staticmethod
     def shuffle(deck):
         temp = []
         shuffled = []
+
+        # Create a temporary deck to not mess with the original deck
         for i in range(0, len(deck)):
             temp.append(deck[i])
+
+        # Get a random card from the temporary deck and move it to the end of the shuffled deck
         for i in range(0, len(deck)):
             rand = random.randrange(0, len(deck) - i)
             shuffled.append(temp.pop(rand))
+
         return shuffled
 
     # Methods below deal with transferring cards.
     @staticmethod
     def deal_cards(deck, hand, number_cards):
+        # Ensure that you don't try to pass too many cards
         if len(deck) < number_cards:
             number_cards = len(deck)
+
+        # Add hands from deck to hand
         for i in range(0, number_cards):
             hand.append(deck.pop())
+
+        # Return number of cards passed, as it may be different than requested
+        return number_cards
 
     @staticmethod
     def transfer_card(card, source, destination):

@@ -44,39 +44,38 @@ class SetupState(State):
     def __init__(self, game, name):
         CardLogging.log_file.log('---SetupState __init__() enter---')
         State.__init__(self, game, name)
-        self.card_values = [Constant.values_str["2"],
-                            Constant.values_str["3"],
-                            Constant.values_str["4"],
-                            Constant.values_str["5"],
-                            Constant.values_str["6"],
-                            Constant.values_str["7"],
-                            Constant.values_str["8"],
-                            Constant.values_str["9"],
-                            Constant.values_str["10"],
-                            Constant.values_str["Jack"],
-                            Constant.values_str["Queen"],
-                            Constant.values_str["King"],
-                            Constant.values_str["Ace"]]
+        self.card_values = [Constant.value_str_to_int["2"],
+                            Constant.value_str_to_int["3"],
+                            Constant.value_str_to_int["4"],
+                            Constant.value_str_to_int["5"],
+                            Constant.value_str_to_int["6"],
+                            Constant.value_str_to_int["7"],
+                            Constant.value_str_to_int["8"],
+                            Constant.value_str_to_int["9"],
+                            Constant.value_str_to_int["10"],
+                            Constant.value_str_to_int["Jack"],
+                            Constant.value_str_to_int["Queen"],
+                            Constant.value_str_to_int["King"],
+                            Constant.value_str_to_int["Ace"]]
 
-        self.card_suits = [Constant.suits_str["Clubs"],
-                           Constant.suits_str["Diamonds"],
-                           Constant.suits_str["Spades"],
-                           Constant.suits_str["Hearts"]]
+        self.card_suits = [Constant.suit_str_to_int["Clubs"],
+                           Constant.suit_str_to_int["Diamonds"],
+                           Constant.suit_str_to_int["Spades"],
+                           Constant.suit_str_to_int["Hearts"]]
+
+        # Deck is only referenced to create shuffled deck. Only needs to be created once.
+        self.game.deck = Cards.CardEngine.create_deck(self.card_suits, self.card_values)
+        self.game.create_card_ui()
+        self.shuffled_deck = []
 
         CardLogging.log_file.log('---SetupState __init__() exit---')
 
     def enter(self):
         CardLogging.log_file.log('---SetupState enter() enter---')
-        self.game.deck = Cards.CardEngine.create_deck(self.card_suits, self.card_values)
-        self.game.shuffled_deck = Cards.CardEngine.shuffle(self.game.deck)
+        self.shuffled_deck = Cards.CardEngine.shuffle(self.game.deck)
         CardLogging.log_file.log('SetupState: Size of deck: ' + str(len(self.game.deck)))
-        CardLogging.log_file.log('SetupState: Size of shuffled deck: ' + str(len(self.game.shuffled_deck)))
-        self.game.create_card_ui()
-        self.game.setup_hands()
-        self.game.player_one.sort_hand()
-        self.game.player_two.sort_hand()
-        self.game.player_three.sort_hand()
-        self.game.player_four.sort_hand()
+        CardLogging.log_file.log('SetupState: Size of shuffled deck: ' + str(len(self.shuffled_deck)))
+        self.setup_hands()
         self.game.setup_ui()
         self.game.hearts_broken = False
 
@@ -86,11 +85,6 @@ class SetupState(State):
 
     def exit(self):
         CardLogging.log_file.log('---SetupState exit() enter---')
-        CardLogging.log_file.log('SetupState: Setup exit')
-        self.game.player_one.set_hand_owner()
-        self.game.player_two.set_hand_owner()
-        self.game.player_three.set_hand_owner()
-        self.game.player_four.set_hand_owner()
 
         CardLogging.log_file.log('SetupState: Set next state to None')
         self.next_state = None
@@ -98,13 +92,11 @@ class SetupState(State):
 
     def handle_keypress(self, event):
         CardLogging.log_file.log('---SetupState handle_keypress() enter---')
-        CardLogging.log_file.log('SetupState: Keypress handled in Setup')
         CardLogging.log_file.log('---SetupState handle_keypress() exit---')
         return
 
     def handle_card_click(self, card_ui):
         CardLogging.log_file.log('---SetupState handle_card_click() enter---')
-        CardLogging.log_file.log('SetupState: Card Click handled in Setup')
         CardLogging.log_file.log('---SetupState handle_card_click() exit---')
         return
 
@@ -112,6 +104,23 @@ class SetupState(State):
         CardLogging.log_file.log('---SetupState update() enter---')
         CardLogging.log_file.log('---SetupState update() exit---')
         return self.next_state
+
+    def setup_hands(self):
+        for i in range(0, 13):
+            Cards.CardEngine.deal_cards(self.shuffled_deck, self.game.player_one.hand, 1)
+            Cards.CardEngine.deal_cards(self.shuffled_deck, self.game.player_two.hand, 1)
+            Cards.CardEngine.deal_cards(self.shuffled_deck, self.game.player_three.hand, 1)
+            Cards.CardEngine.deal_cards(self.shuffled_deck, self.game.player_four.hand, 1)
+
+        self.game.player_one.set_hand_owner()
+        self.game.player_two.set_hand_owner()
+        self.game.player_three.set_hand_owner()
+        self.game.player_four.set_hand_owner()
+
+        self.game.player_one.sort_hand()
+        self.game.player_two.sort_hand()
+        self.game.player_three.sort_hand()
+        self.game.player_four.sort_hand()
 
 
 class PassingState(State):
@@ -126,8 +135,6 @@ class PassingState(State):
     def enter(self):
         CardLogging.log_file.log('---PassingState enter() enter---')
 
-        CardLogging.log_file.log('PassingState: Passing enter')
-
         CardLogging.log_file.log('PassingState: Players passing hand set to empty list ')
 
         self.game.player_one.passing = []
@@ -136,7 +143,7 @@ class PassingState(State):
         self.game.player_four.passing = []
 
         if self.passing_order is "None":
-            self.passing_order = "Left"
+            self.get_next_passing()
             self.next_state = "Playing"
 
             CardLogging.log_file.log('PassingState: Passing order set to ' + self.passing_order)
@@ -152,6 +159,13 @@ class PassingState(State):
         self.game.player_two.set_hand_owner()
         self.game.player_three.set_hand_owner()
         self.game.player_four.set_hand_owner()
+
+        self.game.player_one.sort_hand()
+        self.game.player_two.sort_hand()
+        self.game.player_three.sort_hand()
+        self.game.player_four.sort_hand()
+
+        self.game.setup_ui()
 
         CardLogging.log_file.log('PassingState: Set next state to None')
         self.next_state = None
@@ -226,6 +240,16 @@ class PassingState(State):
         player_three_pass = player_three.passing
         player_four_pass = player_four.passing
 
+        print len(player_one_pass)
+        print len(player_two_pass)
+        print len(player_three_pass)
+        print len(player_four_pass)
+        print ""
+        print len(player_one.hand)
+        print len(player_two.hand)
+        print len(player_three.hand)
+        print len(player_four.hand)
+
         if self.passing_order is "Left":
             CardLogging.log_file.log('PassingState: Pass cards Left')
 
@@ -238,7 +262,6 @@ class PassingState(State):
             # Computer one to computer two
             # Computer two to computer three
             # Computer three to Human
-            self.passing_order = "Right"
 
         elif self.passing_order is "Right":
             CardLogging.log_file.log('PassingState: Pass cards Right')
@@ -252,7 +275,6 @@ class PassingState(State):
             # Computer one to Human
             # Computer two to computer one
             # Computer three to computer two
-            self.passing_order = "Straight"
 
         elif self.passing_order is "Straight":
             CardLogging.log_file.log('PassingState: Pass cards Across')
@@ -266,22 +288,37 @@ class PassingState(State):
             # Computer one to computer three
             # Computer two to Human
             # Computer three to computer one
-            self.passing_order = "None"
 
         elif self.passing_order is "None":
             CardLogging.log_file.log('PassingState: Pass cards to None')
-            self.passing_order = "Left"
 
-            CardLogging.log_file.log('PassingState: Passing order set to ' + self.passing_order)
+        self.get_next_passing()
+        print len(player_one_pass)
+        print len(player_two_pass)
+        print len(player_three_pass)
+        print len(player_four_pass)
+        print ""
+        print len(player_one.hand)
+        print len(player_two.hand)
+        print len(player_three.hand)
+        print len(player_four.hand)
 
-        player_one.sort_hand()
-        player_two.sort_hand()
-        player_three.sort_hand()
-        player_four.sort_hand()
-
-        self.game.setup_ui()
         CardLogging.log_file.log('---PassingState passing_round() exit---')
         return
+
+    def get_next_passing(self):
+        if self.passing_order is "None":
+            self.passing_order = "Left"
+            self.next_state = "Playing"
+
+        elif self.passing_order is "Left":
+            self.passing_order = "Right"
+
+        elif self.passing_order is "Right":
+            self.passing_order = "Straight"
+
+        elif self.passing_order is "Straight":
+            self.passing_order = "None"
 
 
 class PlayingState(State):
@@ -296,7 +333,7 @@ class PlayingState(State):
         CardLogging.log_file.log('PlayingState: Set current card to None')
 
         self.currentPlayer = None
-        self.currentSuit = Constant.suits_str["Clubs"]
+        self.currentSuit = Constant.suit_str_to_int["Clubs"]
         self.trickPile = []
         self.heartsBroken = False
         self.currentCard = None
@@ -324,7 +361,7 @@ class PlayingState(State):
         CardLogging.log_file.log('PlayingState: Set hearts broken to False')
         CardLogging.log_file.log('PlayingState: Set current card to None')
 
-        self.currentSuit = Constant.suits_str["Clubs"]
+        self.currentSuit = Constant.suit_str_to_int["Clubs"]
         self.trickPile = []
         self.heartsBroken = False
         self.currentCard = None
@@ -448,8 +485,8 @@ class PlayingState(State):
         while len(self.trickPile) > 0:
 
             card_ui = self.trickPile[0]
-            CardLogging.log_file.log('PlayingState: Transfer card: ' + Constant.values[card_ui.card.value] + ' of ' +
-                                     Constant.suits[card_ui.card.suit])
+            CardLogging.log_file.log('PlayingState: Transfer card: ' + Constant.value_int_to_str[card_ui.card.value] + ' of ' +
+                                     Constant.suit_int_to_str[card_ui.card.suit])
             Cards.CardEngine.transfer_card(card_ui, self.trickPile, trick_player.tricks)
         CardLogging.log_file.log('---PlayingState move_trick_pile_to_player() exit---')
         self.currentSuit = None
@@ -459,23 +496,23 @@ class PlayingState(State):
         for i in range(0, 13):
             CardLogging.log_file.log('PlayingState: Check card ' + str(i + 1) + ' is 2 of clubs P1 to P4')
 
-            if self.game.player_one.hand[i].suit is Constant.suits_str["Clubs"] \
-                    and self.game.player_one.hand[i].value is Constant.values_str["2"]:
+            if self.game.player_one.hand[i].suit is Constant.suit_str_to_int["Clubs"] \
+                    and self.game.player_one.hand[i].value is Constant.value_str_to_int["2"]:
                 CardLogging.log_file.log('PlayingState: 2 of clubs found P1')
                 return self.game.player_one
 
-            elif self.game.player_two.hand[i].suit is Constant.suits_str["Clubs"] \
-                    and self.game.player_two.hand[i].value is Constant.values_str["2"]:
+            elif self.game.player_two.hand[i].suit is Constant.suit_str_to_int["Clubs"] \
+                    and self.game.player_two.hand[i].value is Constant.value_str_to_int["2"]:
                 CardLogging.log_file.log('PlayingState: 2 of clubs found P2')
                 return self.game.player_two
 
-            elif self.game.player_three.hand[i].suit is Constant.suits_str["Clubs"] \
-                    and self.game.player_three.hand[i].value is Constant.values_str["2"]:
+            elif self.game.player_three.hand[i].suit is Constant.suit_str_to_int["Clubs"] \
+                    and self.game.player_three.hand[i].value is Constant.value_str_to_int["2"]:
                 CardLogging.log_file.log('PlayingState: 2 of clubs found P3')
                 return self.game.player_three
 
-            elif self.game.player_four.hand[i].suit is Constant.suits_str["Clubs"] \
-                    and self.game.player_four.hand[i].value is Constant.values_str["2"]:
+            elif self.game.player_four.hand[i].suit is Constant.suit_str_to_int["Clubs"] \
+                    and self.game.player_four.hand[i].value is Constant.value_str_to_int["2"]:
                 CardLogging.log_file.log('PlayingState: 2 of clubs found P4')
                 return self.game.player_four
         CardLogging.log_file.log('---PlayingState find_player_with_two_of_spades() exit---')
@@ -484,7 +521,7 @@ class PlayingState(State):
     def handle_computer_player_turn(self):
         CardLogging.log_file.log('---PlayingState handle_computer_player_turn() enter---')
         CardLogging.log_file.log('PlayingState: Allow computer to play card')
-        card = self.currentPlayer.play_card(self.currentSuit)
+        card = self.currentPlayer.play_card(self.currentSuit, self.trickPile)
 
         if self.currentSuit is None:
             self.currentSuit = card.suit
@@ -718,11 +755,11 @@ class ScoringState(State):
         points = 0
         for card_ui in player.tricks:
             card = card_ui.card
-            if card.suit is Constant.suits_str["Hearts"]:
+            if card.suit is Constant.suit_str_to_int["Hearts"]:
                 CardLogging.log_file.log('ScoringState: Hearts found')
                 points += 1
-            elif card.suit is Constant.suits_str["Spades"]:
-                if card.value is Constant.values_str["Queen"]:
+            elif card.suit is Constant.suit_str_to_int["Spades"]:
+                if card.value is Constant.value_str_to_int["Queen"]:
                     CardLogging.log_file.log('ScoringState: Queen of Spades found')
                     points += 13
 

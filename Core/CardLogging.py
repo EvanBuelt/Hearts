@@ -15,5 +15,5 @@ class Logger:
                     self.number += 1
 
 now = datetime.datetime.now()
-log_file = Logger('Hearts_' + str(now.year) + '_' + str(now.month) + '_' + str(now.day) + '_' + str(now.hour) +
+log_file = Logger('Core\Logs\Hearts_' + str(now.year) + '_' + str(now.month) + '_' + str(now.day) + '_' + str(now.hour) +
                   '_' + str(now.minute) + '_' + str(now.second) + '.txt')

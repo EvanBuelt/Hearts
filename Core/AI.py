@@ -1,48 +1,6 @@
+from CardEngine import Engine
 import CardLogging
 import Constant
-
-
-class Player:
-    def __init__(self, name, ai):
-        self.name = name
-        self.ai = ai
-        self.hand = []
-        self.tricks = []
-        self.passing = []
-        self.selected_card = None
-
-        self.ai.set_player(self)
-
-    def sort_hand(self):
-        for i in range(0, len(self.hand)):
-            for j in range(0, i):
-                if self.hand[j].suit > self.hand[j + 1].suit:
-                    temp = self.hand[j]
-                    self.hand[j] = self.hand[j + 1]
-                    self.hand[j + 1] = temp
-
-        for i in range(0, len(self.hand)):
-            for j in range(0, i):
-                if self.hand[j].value > self.hand[j + 1].value:
-                    temp = self.hand[j]
-                    self.hand[j] = self.hand[j + 1]
-                    self.hand[j + 1] = temp
-
-    def set_hand_owner(self):
-        for card in self.hand:
-            card.owner = self
-
-    def pass_cards(self):
-        return self.ai.pass_cards(self)
-
-    def play_card(self, current_suit, trick_pile):
-        return self.ai.play_card(current_suit, trick_pile)
-
-    def handle_card_click(self, card_ui, current_suit):
-        return self.ai.handle_card_click(card_ui, current_suit)
-
-    def handle_keypress(self, event):
-        return self.ai.handle_keypress(event)
 
 
 class HumanAI:
@@ -68,8 +26,8 @@ class HumanAI:
         elif card_ui.card in self.player.hand:
             card_ui.play_sound()
             if self.has_two_of_clubs():
-                if card_ui.card.suit is Constant.suits_str["Clubs"]:
-                    if card_ui.card.value is Constant.values_str["2"]:
+                if card_ui.card.suit is Constant.suit_str_to_int["Clubs"]:
+                    if card_ui.card.value is Constant.value_str_to_int["2"]:
                         self.player_deselect_card(self._selected_card_ui)
                         self.player_select_card(card_ui)
 
@@ -91,8 +49,8 @@ class HumanAI:
 
     def has_two_of_clubs(self):
         for card in self.player.hand:
-            if card.suit is Constant.suits_str["Clubs"]:
-                if card.value is Constant.values_str["2"]:
+            if card.suit is Constant.suit_str_to_int["Clubs"]:
+                if card.value is Constant.value_str_to_int["2"]:
                     return True
         return False
 
@@ -129,38 +87,10 @@ class ComputerAI:
 
     def pass_cards(self, computer_player):
         CardLogging.log_file.log('ComputerAI: ' + self.player.name + ': pass cards')
-
-        computer_player.passing = []
-        passing = computer_player.passing
-
-        cards_to_pass = self.determine_cards_to_pass()
-        for i in range(0, 3):
-            passing.append(cards_to_pass[i])
-
+        computer_player.passing = self.determine_cards_to_pass()
         return
 
     def play_card(self, current_suit, trick_pile):
-        hand = self.player.hand
-
-        if current_suit is Constant.suits_str["Hearts"]:
-            return
-
-        elif current_suit is Constant.suits_str["Spades"]:
-            return
-
-        elif current_suit is Constant.suits_str["Clubs"]:
-            return
-
-        elif current_suit is Constant.suits_str["Diamonds"]:
-            return
-
-        elif current_suit is None:
-            return
-
-        else:
-            for i in range(0, len(hand)):
-                if hand[i].suit is current_suit:
-                    return hand.pop(i)
 
         '''
         Determine suit to follow and has suit:
@@ -199,7 +129,35 @@ class ComputerAI:
 
         -Play highest card of suit with lowest number of cards
         '''
-        return hand.pop()
+
+        hand = self.player.hand
+        passing_card = None
+
+        if current_suit is Constant.suit_str_to_int["Hearts"]:
+            passing_card = self.find_highest_card_under_value(current_suit, trick_pile)
+
+        elif current_suit is Constant.suit_str_to_int["Spades"]:
+            passing_card = self.find_highest_card_under_value(current_suit, trick_pile)
+
+        elif current_suit is Constant.suit_str_to_int["Clubs"]:
+            passing_card = self.find_highest_card_under_value(current_suit, trick_pile)
+
+        elif current_suit is Constant.suit_str_to_int["Diamonds"]:
+            passing_card = self.find_highest_card_under_value(current_suit, trick_pile)
+
+        elif current_suit is None:
+            passing_card = None
+
+        if passing_card is not None:
+            hand.remove(passing_card)
+            return passing_card
+
+        else:
+            for i in range(0, len(hand)):
+                if hand[i].suit is current_suit:
+                    return hand.pop(i)
+
+            return hand.pop()
 
     def handle_card_click(self, card_ui, current_suit):
         return
@@ -213,71 +171,71 @@ class ComputerAI:
         cards_to_pass = []
 
         # Pass queen of spades if it's in hand
-        queen_of_spades_exists, card = self.has_card(Constant.values_str["Queen"], Constant.suits_str["Spades"])
+        queen_of_spades_exists, card = self.has_card(Constant.value_str_to_int["Queen"], Constant.suit_str_to_int["Spades"])
         if queen_of_spades_exists:
             cards_to_pass.append(card)
 
         # Pass ace of spades if it's in hand
-        ace_of_spades_exists, card = self.has_card(Constant.values_str["Ace"], Constant.suits_str["Spades"])
+        ace_of_spades_exists, card = self.has_card(Constant.value_str_to_int["Ace"], Constant.suit_str_to_int["Spades"])
         if ace_of_spades_exists:
             cards_to_pass.append(card)
 
         # Pass king of spades if it's in hand
-        king_of_spades_exists, card = self.has_card(Constant.values_str["King"], Constant.suits_str["Spades"])
+        king_of_spades_exists, card = self.has_card(Constant.value_str_to_int["King"], Constant.suit_str_to_int["Spades"])
         if king_of_spades_exists:
             cards_to_pass.append(card)
 
         # Pass highest hearts in hand
-        hearts_list = self.get_highest_cards(Constant.suits_str["Hearts"], 3 - len(cards_to_pass))
+        hearts_list = self.get_highest_cards(Constant.suit_str_to_int["Hearts"], 3 - len(cards_to_pass))
         while len(hearts_list) > 0:
             cards_to_pass.append(hearts_list.pop())
 
-        num_hearts = self.get_number_of_cards_with_suit(Constant.suits_str["Hearts"])
-        num_clubs = self.get_number_of_cards_with_suit(Constant.suits_str["Clubs"])
-        num_diamonds = self.get_number_of_cards_with_suit(Constant.suits_str["Diamonds"])
-        num_spades = self.get_number_of_cards_with_suit(Constant.suits_str["Spades"])
+        num_hearts = self.get_number_of_cards_with_suit(Constant.suit_str_to_int["Hearts"])
+        num_clubs = self.get_number_of_cards_with_suit(Constant.suit_str_to_int["Clubs"])
+        num_diamonds = self.get_number_of_cards_with_suit(Constant.suit_str_to_int["Diamonds"])
+        num_spades = self.get_number_of_cards_with_suit(Constant.suit_str_to_int["Spades"])
 
         # If the computer can get rid of all hearts, get rid of them
         if num_hearts <= (3 - len(cards_to_pass)):
-            hearts_list = self.get_highest_cards(Constant.suits_str["Hearts"], 3 - len(cards_to_pass))
+            hearts_list = self.get_highest_cards(Constant.suit_str_to_int["Hearts"], 3 - len(cards_to_pass))
             while len(hearts_list) > 0:
                 cards_to_pass.append(hearts_list.pop())
 
         # If the computer can get rid of all clubs, get rid of them
         if num_clubs <= (3 - len(cards_to_pass)):
-            clubs_list = self.get_highest_cards(Constant.suits_str["Clubs"], 3 - len(cards_to_pass))
+            clubs_list = self.get_highest_cards(Constant.suit_str_to_int["Clubs"], 3 - len(cards_to_pass))
             while len(clubs_list) > 0:
                 cards_to_pass.append(clubs_list.pop())
 
         # If the computer can get rid of all diamonds, get rid of them
         if num_diamonds <= (3 - len(cards_to_pass)):
-            diamonds_list = self.get_highest_cards(Constant.suits_str["Diamonds"], 3 - len(cards_to_pass))
+            diamonds_list = self.get_highest_cards(Constant.suit_str_to_int["Diamonds"], 3 - len(cards_to_pass))
             while len(diamonds_list) > 0:
                 cards_to_pass.append(diamonds_list.pop())
 
         # If the computer can get rid of all spades, get rid of them
         if num_spades <= (3 - len(cards_to_pass)):
-            spades_list = self.get_highest_cards(Constant.suits_str["Spades"], 3 - len(cards_to_pass))
+            spades_list = self.get_highest_cards(Constant.suit_str_to_int["Spades"], 3 - len(cards_to_pass))
             while len(spades_list) > 0:
                 cards_to_pass.append(spades_list.pop())
 
         # Get rid of highest diamonds
-        diamonds_list = self.get_highest_cards(Constant.suits_str["Diamonds"], 3 - len(cards_to_pass))
+        diamonds_list = self.get_highest_cards(Constant.suit_str_to_int["Diamonds"], 3 - len(cards_to_pass))
         while len(diamonds_list) > 0:
             cards_to_pass.append(diamonds_list.pop())
 
         # Get rid of highest clubs
-        clubs_list = self.get_highest_cards(Constant.suits_str["Clubs"], 3 - len(cards_to_pass))
+        clubs_list = self.get_highest_cards(Constant.suit_str_to_int["Clubs"], 3 - len(cards_to_pass))
         while len(clubs_list) > 0:
             cards_to_pass.append(clubs_list.pop())
 
         # Get rid of highest hearts
-        hearts_list = self.get_highest_cards(Constant.suits_str["Hearts"], 3 - len(cards_to_pass))
+        hearts_list = self.get_highest_cards(Constant.suit_str_to_int["Hearts"], 3 - len(cards_to_pass))
         while len(hearts_list) > 0:
             cards_to_pass.append(hearts_list.pop())
 
         # Get rid of highest spades
-        spades_list = self.get_highest_cards(Constant.suits_str["Spades"], 3 - len(cards_to_pass))
+        spades_list = self.get_highest_cards(Constant.suit_str_to_int["Spades"], 3 - len(cards_to_pass))
         while len(spades_list) > 0:
             cards_to_pass.append(spades_list.pop())
 
@@ -305,8 +263,14 @@ class ComputerAI:
             if card.suit is suit:
                 possible_card_list.append(card)
 
+        print "Cards to move: " + str(number_cards_to_move)
+        print "Possible before: " + str(len(possible_card_list))
+
         while (len(card_list) < number_cards_to_move) and (len(possible_card_list) > 0):
             card_list.append(possible_card_list.pop())
+
+        print "Possible after: " + str(len(possible_card_list))
+        print ""
 
         return card_list
 
@@ -315,15 +279,41 @@ class ComputerAI:
         for card in self.player.hand:
             if card.suit is suit:
                 number += 1
-        CardLogging.log_file.log('ComputerAI: Number of ' + Constant.suits[suit] + ': ' + str(number))
+        CardLogging.log_file.log('ComputerAI: Number of ' + Constant.suit_int_to_str[suit] + ': ' + str(number))
         return number
 
-    def find_highest_card_under_value(self, suit, trick_pile):
+    def find_highest_card_under_value(self, current_suit, trick_pile):
+
+        if trick_pile is None:
+            return None
 
         card_list = []
+        highest_trick_card = None
+        highest_card = None
 
-        for card_ui in self.player.hand:
-            if card_ui.suit is suit:
-                card_list.append(card_ui)
+        for card_ui in trick_pile:
+            if card_ui.card.suit is current_suit:
+                if highest_trick_card is None:
+                    highest_trick_card = card_ui.card
+                elif card_ui.card.value > highest_trick_card.value:
+                    highest_trick_card = card_ui.card
 
-        return
+        for card in self.player.hand:
+            if card.suit is current_suit:
+                card_list.append(card)
+
+        if len(card_list) is 0:
+            return None
+
+        elif highest_trick_card is None:
+            return None
+
+        else:
+            for card in card_list:
+                if card.value < highest_trick_card.value:
+                    if highest_card is None:
+                        highest_card = card
+                    elif card.value > highest_card.value:
+                        highest_card = card
+
+        return highest_card

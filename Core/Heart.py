@@ -6,6 +6,51 @@ import Constant
 import pygame
 
 
+class Player:
+    def __init__(self, name, ai):
+        self.name = name
+        self.ai = ai
+        self.hand = []
+        self.tricks = []
+        self.cards_to_pass = []
+        self.selected_card = None
+        self.round_points = []
+        self.total_points = 0
+
+        self.ai.set_player(self)
+
+    def sort_hand(self):
+        for i in range(0, len(self.hand)):
+            for j in range(0, i):
+                if self.hand[j].suit > self.hand[j + 1].suit:
+                    temp = self.hand[j]
+                    self.hand[j] = self.hand[j + 1]
+                    self.hand[j + 1] = temp
+
+        for i in range(0, len(self.hand)):
+            for j in range(0, i):
+                if self.hand[j].value > self.hand[j + 1].value:
+                    temp = self.hand[j]
+                    self.hand[j] = self.hand[j + 1]
+                    self.hand[j + 1] = temp
+
+    def set_hand_owner(self):
+        for card in self.hand:
+            card.owner = self
+
+    def pass_cards(self):
+        return self.ai.pass_cards(self)
+
+    def play_card(self, current_suit, trick_pile):
+        return self.ai.play_card(current_suit, trick_pile)
+
+    def handle_card_click(self, card_ui, current_suit):
+        return self.ai.handle_card_click(card_ui, current_suit)
+
+    def handle_keypress(self, event):
+        return self.ai.handle_keypress(event)
+
+
 class Hearts:
     def __init__(self, width=800, height=800):
         Engine.CardEngine.init(width, height)
@@ -16,26 +61,14 @@ class Hearts:
         # Initialize the players for the game
         # Bottom is Human Player. Goes clockwise for computers
         # i.e. one is left, two is top, three is right
-        self.player_one = AI.Player("Human", AI.HumanAI())
-        self.player_two = AI.Player("Sarah", AI.ComputerAI())
-        self.player_three = AI.Player("Jane", AI.ComputerAI())
-        self.player_four = AI.Player("Smith", AI.ComputerAI())
+        self.player_one = Player("Human", AI.HumanAI())
+        self.player_two = Player("Sarah", AI.ComputerAI())
+        self.player_three = Player("Jane", AI.ComputerAI())
+        self.player_four = Player("Smith", AI.ComputerAI())
 
-        # Initialize the trick pile and deck
+        # Initialize the deck
         self.trick_pile = []
         self.deck = []
-        self.shuffled_deck = []
-
-        # Variables to keep track of passing order and whether hearts have been broken
-        self.hearts_broken = False
-        self.current_suit = Constant.suits_str["Clubs"]
-        self.current_player = None
-        self.passing_order = "Left"
-        self.passing_order_list = ["Left", "Right", "Straight", "None"]
-
-        # States the game can be in
-        self.state = "Start"
-        self.state_list = ["Start", "Passing", "Play", "Scoring", "End"]
 
         # Load the sprites for the cards into the game
         self.front_sprites = {}
@@ -45,11 +78,6 @@ class Hearts:
         self.imageType = ".png"
         self.load_sprites()
         self.create_card_ui()
-
-        # Setup the UI elements for the different screens
-        self.score_text = []
-        self.menu_text = "Welcome to Hearts!  Press start to play."
-        self.menu_button = None
 
         # Setup State Machine for handling game play
         self.stateMachine = StateMachine.StateMachine()
@@ -67,7 +95,7 @@ class Hearts:
     def load_sprites(self):
         for suit in range(1, 5):
             for value in range(2, 15):
-                name = Constant.values[value] + " of " + Constant.suits[suit]
+                name = Constant.value_int_to_str[value] + " of " + Constant.suit_int_to_str[suit]
                 sprite = pygame.image.load(self.imagePath + name + self.imageType)
                 self.front_sprites[name] = sprite
 
@@ -76,18 +104,6 @@ class Hearts:
             sprite = pygame.image.load(self.imagePath + name + self.imageType)
             self.back_sprites[name] = sprite
         return
-
-    def setup_hands(self):
-        for i in range(0, 13):
-            Engine.CardEngine.deal_cards(self.shuffled_deck, self.player_one.hand, 1)
-            Engine.CardEngine.deal_cards(self.shuffled_deck, self.player_two.hand, 1)
-            Engine.CardEngine.deal_cards(self.shuffled_deck, self.player_three.hand, 1)
-            Engine.CardEngine.deal_cards(self.shuffled_deck, self.player_four.hand, 1)
-
-        self.player_one.set_hand_owner()
-        self.player_two.set_hand_owner()
-        self.player_three.set_hand_owner()
-        self.player_four.set_hand_owner()
 
     def setup_ui(self):
         one_x = 212
@@ -137,7 +153,7 @@ class Hearts:
                 card_ui.card.owner = self.player_four
                 four_y -= 25
 
-            if card.value is Constant.values_str["Ace"] and card.suit is Constant.suits_str["Spades"]:
+            if card.value is Constant.value_str_to_int["Ace"] and card.suit is Constant.suit_str_to_int["Spades"]:
                 card_ui.load_sound_file("Sound/The Ace of Spades.wav")
 
         return
@@ -145,7 +161,7 @@ class Hearts:
     def create_card_ui(self):
         z = 0
         for card in self.deck:
-            front_sprite_name = Constant.values[card.value] + " of " + Constant.suits[card.suit]
+            front_sprite_name = Constant.value_int_to_str[card.value] + " of " + Constant.suit_int_to_str[card.suit]
             back_sprite_name = "Card Back 1"
 
             front_sprite = self.front_sprites[front_sprite_name]
@@ -153,7 +169,7 @@ class Hearts:
             card_ui = Engine.Card(Engine.CardEngine, card, front_sprite, back_sprite, x=0, y=0, z=z,
                                   callback_function=self.stateMachine.handle_card_click, angle_degrees=0)
 
-            # card_ui.visible = False
+            card_ui.visible = False
             self.card_ui_elements.append(card_ui)
             z += .1
 
