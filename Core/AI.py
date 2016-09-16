@@ -185,59 +185,31 @@ class ComputerAI:
         if king_of_spades_exists:
             cards_to_pass.append(card)
 
-        # Pass highest hearts in hand
-        hearts_list = self.get_highest_cards(Constant.suit_str_to_int["Hearts"], 3 - len(cards_to_pass))
-        while len(hearts_list) > 0:
-            cards_to_pass.append(hearts_list.pop())
-
-        num_hearts = self.get_number_of_cards_with_suit(Constant.suit_str_to_int["Hearts"])
-        num_clubs = self.get_number_of_cards_with_suit(Constant.suit_str_to_int["Clubs"])
-        num_diamonds = self.get_number_of_cards_with_suit(Constant.suit_str_to_int["Diamonds"])
-        num_spades = self.get_number_of_cards_with_suit(Constant.suit_str_to_int["Spades"])
-
-        # If the computer can get rid of all hearts, get rid of them
-        if num_hearts <= (3 - len(cards_to_pass)):
-            hearts_list = self.get_highest_cards(Constant.suit_str_to_int["Hearts"], 3 - len(cards_to_pass))
-            while len(hearts_list) > 0:
-                cards_to_pass.append(hearts_list.pop())
-
-        # If the computer can get rid of all clubs, get rid of them
-        if num_clubs <= (3 - len(cards_to_pass)):
-            clubs_list = self.get_highest_cards(Constant.suit_str_to_int["Clubs"], 3 - len(cards_to_pass))
-            while len(clubs_list) > 0:
-                cards_to_pass.append(clubs_list.pop())
-
-        # If the computer can get rid of all diamonds, get rid of them
-        if num_diamonds <= (3 - len(cards_to_pass)):
-            diamonds_list = self.get_highest_cards(Constant.suit_str_to_int["Diamonds"], 3 - len(cards_to_pass))
-            while len(diamonds_list) > 0:
-                cards_to_pass.append(diamonds_list.pop())
-
-        # If the computer can get rid of all spades, get rid of them
-        if num_spades <= (3 - len(cards_to_pass)):
-            spades_list = self.get_highest_cards(Constant.suit_str_to_int["Spades"], 3 - len(cards_to_pass))
-            while len(spades_list) > 0:
-                cards_to_pass.append(spades_list.pop())
-
-        # Get rid of highest diamonds
-        diamonds_list = self.get_highest_cards(Constant.suit_str_to_int["Diamonds"], 3 - len(cards_to_pass))
-        while len(diamonds_list) > 0:
-            cards_to_pass.append(diamonds_list.pop())
-
-        # Get rid of highest clubs
-        clubs_list = self.get_highest_cards(Constant.suit_str_to_int["Clubs"], 3 - len(cards_to_pass))
-        while len(clubs_list) > 0:
-            cards_to_pass.append(clubs_list.pop())
+        self.pass_entire_suit(Constant.suit_str_to_int["Hearts"], cards_to_pass)
+        self.pass_entire_suit(Constant.suit_str_to_int["Clubs"], cards_to_pass)
+        self.pass_entire_suit(Constant.suit_str_to_int["Diamonds"], cards_to_pass)
+        self.pass_entire_suit(Constant.suit_str_to_int["Spades"], cards_to_pass)
 
         # Get rid of highest hearts
-        hearts_list = self.get_highest_cards(Constant.suit_str_to_int["Hearts"], 3 - len(cards_to_pass))
-        while len(hearts_list) > 0:
-            cards_to_pass.append(hearts_list.pop())
+        hearts_list = self.get_highest_cards(Constant.suit_str_to_int["Hearts"], cards_to_pass)
+        Engine.CardEngine.transfer_list(hearts_list, cards_to_pass)
+
+        # Get rid of highest diamonds
+        diamonds_list = self.get_highest_cards(Constant.suit_str_to_int["Diamonds"], cards_to_pass)
+        Engine.CardEngine.transfer_list(diamonds_list, cards_to_pass)
+
+        # Get rid of highest clubs
+        clubs_list = self.get_highest_cards(Constant.suit_str_to_int["Clubs"], cards_to_pass)
+        Engine.CardEngine.transfer_list(clubs_list, cards_to_pass)
 
         # Get rid of highest spades
-        spades_list = self.get_highest_cards(Constant.suit_str_to_int["Spades"], 3 - len(cards_to_pass))
-        while len(spades_list) > 0:
-            cards_to_pass.append(spades_list.pop())
+        spades_list = self.get_highest_cards(Constant.suit_str_to_int["Spades"], cards_to_pass)
+        Engine.CardEngine.transfer_list(spades_list, cards_to_pass)
+
+        for card in self.player.hand:
+            if card not in cards_to_pass:
+                if len(cards_to_pass) < 3:
+                    cards_to_pass.append(card)
 
         return cards_to_pass
         # The logic to determine what to pass is as follows:
@@ -255,22 +227,18 @@ class ComputerAI:
 
         return False, None
 
-    def get_highest_cards(self, suit, number_cards_to_move):
+    def get_highest_cards(self, suit, cards_to_pass):
+        number_cards_to_move = 3 - len(cards_to_pass)
         possible_card_list = []
         card_list = []
 
         for card in self.player.hand:
-            if card.suit is suit:
-                possible_card_list.append(card)
-
-        print "Cards to move: " + str(number_cards_to_move)
-        print "Possible before: " + str(len(possible_card_list))
+            if card not in cards_to_pass:
+                if card.suit is suit:
+                    possible_card_list.append(card)
 
         while (len(card_list) < number_cards_to_move) and (len(possible_card_list) > 0):
             card_list.append(possible_card_list.pop())
-
-        print "Possible after: " + str(len(possible_card_list))
-        print ""
 
         return card_list
 
@@ -317,3 +285,9 @@ class ComputerAI:
                         highest_card = card
 
         return highest_card
+
+    def pass_entire_suit(self, suit, cards_to_pass):
+        num_cards_in_suit = self.get_number_of_cards_with_suit(suit)
+        if num_cards_in_suit <= (3 - len(cards_to_pass)):
+            cards_to_move = self.get_highest_cards(suit, cards_to_pass)
+            Engine.CardEngine.transfer_list(cards_to_move, cards_to_pass)

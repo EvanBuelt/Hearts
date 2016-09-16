@@ -240,6 +240,63 @@ class PassingState(State):
         player_three_pass = player_three.passing
         player_four_pass = player_four.passing
 
+        print ""
+        print "Pass 1"
+        print ""
+
+        for card in player_one_pass:
+            print Constant.suit_int_to_str[card.suit], Constant.value_int_to_str[card.value]
+
+        print ""
+        print "Hands 1"
+        print ""
+
+        for card in player_one.hand:
+            print Constant.suit_int_to_str[card.suit], Constant.value_int_to_str[card.value]
+
+        print ""
+        print "Pass 2"
+        print ""
+
+        for card in player_two_pass:
+            print Constant.suit_int_to_str[card.suit], Constant.value_int_to_str[card.value]
+
+        print ""
+        print "Hands 2"
+        print ""
+
+        for card in player_two.hand:
+            print Constant.suit_int_to_str[card.suit], Constant.value_int_to_str[card.value]
+
+        print ""
+        print "Pass 3"
+        print ""
+
+        for card in player_three_pass:
+            print Constant.suit_int_to_str[card.suit], Constant.value_int_to_str[card.value]
+
+        print ""
+        print "Hands 3"
+        print ""
+
+        for card in player_three.hand:
+            print Constant.suit_int_to_str[card.suit], Constant.value_int_to_str[card.value]
+
+        print ""
+        print "Pass 4"
+        print ""
+
+        for card in player_four_pass:
+            print Constant.suit_int_to_str[card.suit], Constant.value_int_to_str[card.value]
+
+        print ""
+        print "Hands 4"
+        print ""
+
+        for card in player_four.hand:
+            print Constant.suit_int_to_str[card.suit], Constant.value_int_to_str[card.value]
+
+        print ""
         print len(player_one_pass)
         print len(player_two_pass)
         print len(player_three_pass)
@@ -249,6 +306,9 @@ class PassingState(State):
         print len(player_two.hand)
         print len(player_three.hand)
         print len(player_four.hand)
+        print ""
+        print self.passing_order
+        print ""
 
         if self.passing_order is "Left":
             CardLogging.log_file.log('PassingState: Pass cards Left')
@@ -302,6 +362,9 @@ class PassingState(State):
         print len(player_two.hand)
         print len(player_three.hand)
         print len(player_four.hand)
+        print ""
+        print self.passing_order
+        print ""
 
         CardLogging.log_file.log('---PassingState passing_round() exit---')
         return

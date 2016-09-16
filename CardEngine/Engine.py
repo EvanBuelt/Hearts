@@ -210,6 +210,7 @@ class Card(UI.UIElement):
     angle_degrees = property(_prop_get_angle_degrees, _prop_set_angle_degrees)
     sound = property(_prop_get_sound, _prop_set_sound)
 
+
 class CardEngine:
     # Pygame Display
     DISPLAYSURFACE = None
@@ -285,6 +286,7 @@ class CardEngine:
             ui.render(cls.DISPLAYSURFACE)
         for card in cls.CardElements:
             card.render(cls.DISPLAYSURFACE)
+
         pygame.display.update()
 
     @classmethod
@@ -414,6 +416,26 @@ class CardEngine:
     @staticmethod
     def transfer_cards(card_list, source, destination):
         for card in card_list:
-            if card in source:
-                source.remove(card)
-                destination.append(card)
+            CardEngine.transfer_card(card, source, destination)
+
+    @staticmethod
+    def copy_card(card, source, destination):
+        if card in source:
+            destination.append(card)
+
+    @staticmethod
+    def copy_card_list(card_list, source, destination):
+        for card in card_list:
+            CardEngine.copy_card(card, source, destination)
+
+    @staticmethod
+    def transfer_list(source, destination):
+        destination += source
+        del source[:]
+
+    @staticmethod
+    def copy_list(old_list):
+        new_list = []
+        for item in old_list:
+            new_list.append(item)
+        return new_list
