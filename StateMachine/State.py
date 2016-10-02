@@ -401,6 +401,9 @@ class PlayingState(State):
         self.heartsBroken = False
         self.currentCard = None
 
+        self.delay_trick_pile = False
+        self.previous_time = 0
+
         self.player_one_x = 0
         self.player_one_y = 0
 
@@ -462,16 +465,23 @@ class PlayingState(State):
         return
 
     def update(self):
-        # CardLogging.log_file.log('---PlayingState update() enter---')
-        if len(self.trickPile) is 4:
-            self.move_trick_pile_to_player()
+        if self.delay_trick_pile:
+            if (pygame.time.get_ticks() - self.previous_time) > 500:
+                self.delay_trick_pile = False
+                self.move_trick_pile_to_player()
 
-        elif self.is_done():
-            CardLogging.log_file.log('PlayingState: Setting next state to Scoring')
-            self.next_state = "Scoring"
+        else:
+            # CardLogging.log_file.log('---PlayingState update() enter---')
+            if len(self.trickPile) is 4:
+                self.previous_time = pygame.time.get_ticks()
+                self.delay_trick_pile = True
 
-        elif self.currentPlayer is not self.game.player_one:
-            self.handle_computer_player_turn()
+            elif self.is_done():
+                CardLogging.log_file.log('PlayingState: Setting next state to Scoring')
+                self.next_state = "Scoring"
+
+            elif self.currentPlayer is not self.game.player_one:
+                self.handle_computer_player_turn()
 
         # CardLogging.log_file.log('---PlayingState update() exit---')
         return self.next_state

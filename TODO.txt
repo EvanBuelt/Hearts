@@ -1,0 +1,33 @@
+To Do List for the game:
+-Refactor states to make names make more sense
+-Look into using decision tree for playing the game
+-Update Hearts class to have a list of playable cards (makes decision making easier)
+-Add way to display score in between rounds
+
+-Update passing state to only accept pressing enter to go on (and add UI for it)
+    -use a next key variable (list) - more modular
+    -have a settings menu upon pressing esc or some other key
+
+-Redefine where several variables should exist.
+    -Look into moving gameplay variables such as hearts being broken into Hearts
+    -Points should be associated with player
+
+-Improve logging.
+    -Look into variable on_change callbacks so the logging engine can view changes without needing to add into code
+    -Look into function callbacks for same reason
+    -Add different levels for logging.
+    -Add logging convention.
+
+-Update Card Engine repository - was updated by another person who made decent number of changes, but looked incomplete
+    -See which changes may be appropriate to update here
+    -see if any code in Hearts game can be made common to the Engine.
+
+-Add networking support
+    -LAN vs internet.  LAN is likely easier, and may be able to broadcast
+
+-Decouple AI from player
+    -I'd like to have a single point of entry for multiple card games.  As a result, the player class would be
+    associated with the player for the duration of the game, and could be re-used for multiple sessions
+    -With networking support, it would be frustrating to either reconnect, or have to find a way to handle updating
+    player class every time
+    -Each game would be able to link and unlink AI to the player

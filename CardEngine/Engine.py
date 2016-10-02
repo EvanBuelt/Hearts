@@ -240,6 +240,7 @@ class CardEngine:
 
         # Setup the pygame display for use in the Engine
         pygame.init()
+        UI.init()
         cls.width = width
         cls.height = height
         cls.DISPLAYSURFACE = pygame.display.set_mode((width, height), 0, 32)

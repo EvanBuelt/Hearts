@@ -1,7 +1,7 @@
 import pygame
 
 pygame.font.init()
-UI_FONT = gentiumBookBasic = pygame.font.Font(pygame.font.match_font('gentiumbookbasic'), 20)
+UI_FONT = None
 
 BLACK = (0, 0, 0, 255)
 DARKGRAY = (64, 64, 64, 255)
@@ -12,6 +12,10 @@ WHITE = (255, 255, 255, 255)
 TRANSPARENT = (255, 255, 255, 0)
 GREEN = (24, 119, 24, 255)
 
+
+def init():
+    global UI_FONT
+    UI_FONT = pygame.font.Font(pygame.font.match_font('gentiumbookbasic'), 20)
 
 # InheritanceError is used to ensure certain class methods are inherited.  Used for UIElement.
 class InheritanceError(Exception):
