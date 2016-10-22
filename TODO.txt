@@ -3,6 +3,16 @@ To Do List for the game:
 -Look into using decision tree for playing the game
 -Update Hearts class to have a list of playable cards (makes decision making easier)
 -Add way to display score in between rounds
+-Add start menu
+-Settings menu
+-Add more comments
+-Add UI Elements
+    -Nickname for each player
+    -Press Start button on start menu
+    -Text display for who won the game (I just lost)
+    -Text to start a new game
+
+-Saving a game
 
 -Update passing state to only accept pressing enter to go on (and add UI for it)
     -use a next key variable (list) - more modular
@@ -31,3 +41,11 @@ To Do List for the game:
     -With networking support, it would be frustrating to either reconnect, or have to find a way to handle updating
     player class every time
     -Each game would be able to link and unlink AI to the player
+
+-Update positioning the UI elements to use top, topleft, topright, etc.
+    -Update UI init to use above functionality
+
+-Dynamically loading a game
+    -Seems like it could be incredibly tough to load code for game dynamically.
+    -Need to look into a standard way to start a game
+    -Load modules at runtime?

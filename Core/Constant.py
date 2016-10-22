@@ -35,3 +35,4 @@ value_str_to_int = {"Ace": 14,
                     "Jack": 11,
                     "Queen": 12,
                     "King": 13}
+

@@ -135,29 +135,79 @@ class ComputerAI:
 
         if current_suit is Constant.suit_str_to_int["Hearts"]:
             passing_card = self.find_highest_card_under_value(current_suit, trick_pile)
+            if passing_card is None:
+                passing_card = self.find_lowest_card(current_suit)
 
         elif current_suit is Constant.suit_str_to_int["Spades"]:
+            # passing_card = queen of spades if king or ace of spades in trick pile
+            # play king or ace of spades if all three players have played and no queen of spades
             passing_card = self.find_highest_card_under_value(current_suit, trick_pile)
+            if passing_card is None:
+                passing_card = self.find_lowest_card(current_suit)
 
         elif current_suit is Constant.suit_str_to_int["Clubs"]:
+            # passing_card = highest spade if first turn
             passing_card = self.find_highest_card_under_value(current_suit, trick_pile)
+            if passing_card is None:
+                passing_card = self.find_lowest_card(current_suit)
 
         elif current_suit is Constant.suit_str_to_int["Diamonds"]:
             passing_card = self.find_highest_card_under_value(current_suit, trick_pile)
+            if passing_card is None:
+                passing_card = self.find_lowest_card(current_suit)
 
         elif current_suit is None:
-            passing_card = None
+            passing_card = self.find_lowest_card(Constant.suit_str_to_int["Spades"])
+            if passing_card is None:
+                passing_card = self.find_lowest_card(Constant.suit_str_to_int["Hearts"])
+            if passing_card is None:
+                passing_card = self.find_lowest_card(Constant.suit_str_to_int["Clubs"])
+            if passing_card is None:
+                passing_card = self.find_lowest_card(Constant.suit_str_to_int["Diamonds"])
+            # passing_card = self.lowest_card(["Spades"])
+            # "Hearts"
+            # "Clubs"
+            # "Diamonds"
 
         if passing_card is not None:
             hand.remove(passing_card)
             return passing_card
 
         else:
-            for i in range(0, len(hand)):
-                if hand[i].suit is current_suit:
-                    return hand.pop(i)
+            '''
+            -Spades:
+            -Play Queen of Spades
+            -Play King or Ace of Spades
 
-            return hand.pop()
+            -Hearts:
+                -Play highest heart 7 or above
+
+            -Play highest card 10 or above
+            -Hearts:
+                -Play highest hearts
+            '''
+            
+            # Play Queen of Spades if it's in the hand
+            queen_of_spades_exists, passing_card = self.has_card(Constant.value_str_to_int["Queen"],
+                                                                 Constant.suit_str_to_int["Spades"])
+
+            # Play Ace of Spades if it's in hand (and Queen of Spades is not in hand)
+            if passing_card is None:
+                ace_of_spades_exists, passing_card = self.has_card(Constant.value_str_to_int["Ace"],
+                                                                   Constant.suit_str_to_int["Spades"])
+
+            # Play King of Spades if it's in hand (and Queen or Ace of Spades is not in hand)
+            if passing_card is None:
+                king_of_spades_exists, passing_card = self.has_card(Constant.value_str_to_int["King"],
+                                                                    Constant.suit_str_to_int["Spades"])
+
+            # Fail safe if no passing card is found
+            if passing_card is None:
+                for i in range(0, len(hand)):
+                    if hand[i].suit is current_suit:
+                        return hand.pop(i)
+            else:
+                return passing_card
 
     def handle_card_click(self, card_ui, current_suit):
         return
@@ -250,25 +300,35 @@ class ComputerAI:
         CardLogging.log_file.log('ComputerAI: Number of ' + Constant.suit_int_to_str[suit] + ': ' + str(number))
         return number
 
+    def find_lowest_card(self, current_suit):
+        suit_pile = []
+        lowest_card = None
+
+        for card in self.player.hand:
+            if card.suit is current_suit:
+                suit_pile.append(card)
+
+        if len(suit_pile) is 0:
+            return None
+
+        for card in suit_pile:
+            if lowest_card is None:
+                lowest_card = card
+            else:
+                if card.value < lowest_card.value:
+                    lowest_card = card
+
+        return lowest_card
+
     def find_highest_card_under_value(self, current_suit, trick_pile):
 
         if trick_pile is None:
             return None
 
-        card_list = []
-        highest_trick_card = None
         highest_card = None
 
-        for card_ui in trick_pile:
-            if card_ui.card.suit is current_suit:
-                if highest_trick_card is None:
-                    highest_trick_card = card_ui.card
-                elif card_ui.card.value > highest_trick_card.value:
-                    highest_trick_card = card_ui.card
-
-        for card in self.player.hand:
-            if card.suit is current_suit:
-                card_list.append(card)
+        highest_trick_card = self.get_highest_card_in_trick_pile(current_suit, trick_pile)
+        card_list = self.get_all_cards_of_given_suit(current_suit)
 
         if len(card_list) is 0:
             return None
@@ -285,6 +345,25 @@ class ComputerAI:
                         highest_card = card
 
         return highest_card
+
+    def get_highest_card_in_trick_pile(self, current_suit, trick_pile):
+        highest_trick_card = None
+        for card_ui in trick_pile:
+            if card_ui.card.suit is current_suit:
+                if highest_trick_card is None:
+                    highest_trick_card = card_ui.card
+                elif card_ui.card.value > highest_trick_card.value:
+                    highest_trick_card = card_ui.card
+
+        return highest_trick_card
+
+    def get_all_cards_of_given_suit(self, current_suit):
+        card_list = []
+        for card in self.player.hand:
+            if card.suit is current_suit:
+                card_list.append(card)
+
+        return card_list
 
     def pass_entire_suit(self, suit, cards_to_pass):
         num_cards_in_suit = self.get_number_of_cards_with_suit(suit)
