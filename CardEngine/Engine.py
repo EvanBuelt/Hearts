@@ -165,12 +165,16 @@ class Card(UI.UIElement):
 
     def play_sound(self):
         if self._sound is not None:
+            print pygame.time.get_ticks()
+            print self._start_time
+            print self._sound.get_length() * 1000
             if (pygame.time.get_ticks() - self._start_time) > (self._sound.get_length() * 1000):
                 self._sound.play()
                 self._start_time = pygame.time.get_ticks()
 
     def load_sound_file(self, file_path):
         self._sound = pygame.mixer.Sound(file_path)
+        self._sound.set_volume(0.2)
 
     def _prop_set_callback_function(self, new_callback_function):
         self._callbackFunction = new_callback_function

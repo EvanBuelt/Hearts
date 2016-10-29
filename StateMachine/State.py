@@ -44,24 +44,24 @@ class SetupState(State):
     def __init__(self, game, name):
         CardLogging.log_file.log('---SetupState __init__() enter---')
         State.__init__(self, game, name)
-        self.card_values = [Constant.value_str_to_int["2"],
-                            Constant.value_str_to_int["3"],
-                            Constant.value_str_to_int["4"],
-                            Constant.value_str_to_int["5"],
-                            Constant.value_str_to_int["6"],
-                            Constant.value_str_to_int["7"],
-                            Constant.value_str_to_int["8"],
-                            Constant.value_str_to_int["9"],
-                            Constant.value_str_to_int["10"],
-                            Constant.value_str_to_int["Jack"],
-                            Constant.value_str_to_int["Queen"],
-                            Constant.value_str_to_int["King"],
-                            Constant.value_str_to_int["Ace"]]
+        self.card_values = [Constant.Value.Two,
+                            Constant.Value.Three,
+                            Constant.Value.Four,
+                            Constant.Value.Five,
+                            Constant.Value.Six,
+                            Constant.Value.Seven,
+                            Constant.Value.Eight,
+                            Constant.Value.Nine,
+                            Constant.Value.Ten,
+                            Constant.Value.Jack,
+                            Constant.Value.Queen,
+                            Constant.Value.King,
+                            Constant.Value.Ace]
 
-        self.card_suits = [Constant.suit_str_to_int["Clubs"],
-                           Constant.suit_str_to_int["Diamonds"],
-                           Constant.suit_str_to_int["Spades"],
-                           Constant.suit_str_to_int["Hearts"]]
+        self.card_suits = [Constant.Suit.Clubs,
+                           Constant.Suit.Diamonds,
+                           Constant.Suit.Spades,
+                           Constant.Suit.Hearts]
 
         # Deck is only referenced to create shuffled deck. Only needs to be created once.
         self.game.deck = Cards.CardEngine.create_deck(self.card_suits, self.card_values)
@@ -245,56 +245,56 @@ class PassingState(State):
         print ""
 
         for card in player_one_pass:
-            print Constant.suit_int_to_str[card.suit], Constant.value_int_to_str[card.value]
+            print Constant.suit_str[card.suit], Constant.value_str[card.value]
 
         print ""
         print "Hands 1"
         print ""
 
         for card in player_one.hand:
-            print Constant.suit_int_to_str[card.suit], Constant.value_int_to_str[card.value]
+            print Constant.suit_str[card.suit], Constant.value_str[card.value]
 
         print ""
         print "Pass 2"
         print ""
 
         for card in player_two_pass:
-            print Constant.suit_int_to_str[card.suit], Constant.value_int_to_str[card.value]
+            print Constant.suit_str[card.suit], Constant.value_str[card.value]
 
         print ""
         print "Hands 2"
         print ""
 
         for card in player_two.hand:
-            print Constant.suit_int_to_str[card.suit], Constant.value_int_to_str[card.value]
+            print Constant.suit_str[card.suit], Constant.value_str[card.value]
 
         print ""
         print "Pass 3"
         print ""
 
         for card in player_three_pass:
-            print Constant.suit_int_to_str[card.suit], Constant.value_int_to_str[card.value]
+            print Constant.suit_str[card.suit], Constant.value_str[card.value]
 
         print ""
         print "Hands 3"
         print ""
 
         for card in player_three.hand:
-            print Constant.suit_int_to_str[card.suit], Constant.value_int_to_str[card.value]
+            print Constant.suit_str[card.suit], Constant.value_str[card.value]
 
         print ""
         print "Pass 4"
         print ""
 
         for card in player_four_pass:
-            print Constant.suit_int_to_str[card.suit], Constant.value_int_to_str[card.value]
+            print Constant.suit_str[card.suit], Constant.value_str[card.value]
 
         print ""
         print "Hands 4"
         print ""
 
         for card in player_four.hand:
-            print Constant.suit_int_to_str[card.suit], Constant.value_int_to_str[card.value]
+            print Constant.suit_str[card.suit], Constant.value_str[card.value]
 
         print ""
         print len(player_one_pass)
@@ -396,7 +396,7 @@ class PlayingState(State):
         CardLogging.log_file.log('PlayingState: Set current card to None')
 
         self.currentPlayer = None
-        self.currentSuit = Constant.suit_str_to_int["Clubs"]
+        self.currentSuit = Constant.Suit.Clubs
         self.trickPile = []
         self.heartsBroken = False
         self.currentCard = None
@@ -427,7 +427,7 @@ class PlayingState(State):
         CardLogging.log_file.log('PlayingState: Set hearts broken to False')
         CardLogging.log_file.log('PlayingState: Set current card to None')
 
-        self.currentSuit = Constant.suit_str_to_int["Clubs"]
+        self.currentSuit = Constant.Suit.Clubs
         self.trickPile = []
         self.heartsBroken = False
         self.currentCard = None
@@ -558,8 +558,8 @@ class PlayingState(State):
         while len(self.trickPile) > 0:
 
             card_ui = self.trickPile[0]
-            CardLogging.log_file.log('PlayingState: Transfer card: ' + Constant.value_int_to_str[card_ui.card.value] + ' of ' +
-                                     Constant.suit_int_to_str[card_ui.card.suit])
+            CardLogging.log_file.log('PlayingState: Transfer card: ' + Constant.value_str[card_ui.card.value] + ' of ' +
+                                     Constant.suit_str[card_ui.card.suit])
             Cards.CardEngine.transfer_card(card_ui, self.trickPile, trick_player.tricks)
         CardLogging.log_file.log('---PlayingState move_trick_pile_to_player() exit---')
         self.currentSuit = None
@@ -569,23 +569,23 @@ class PlayingState(State):
         for i in range(0, 13):
             CardLogging.log_file.log('PlayingState: Check card ' + str(i + 1) + ' is 2 of clubs P1 to P4')
 
-            if self.game.player_one.hand[i].suit is Constant.suit_str_to_int["Clubs"] \
-                    and self.game.player_one.hand[i].value is Constant.value_str_to_int["2"]:
+            if self.game.player_one.hand[i].suit is Constant.Suit.Clubs \
+                    and self.game.player_one.hand[i].value is Constant.Value.Two:
                 CardLogging.log_file.log('PlayingState: 2 of clubs found P1')
                 return self.game.player_one
 
-            elif self.game.player_two.hand[i].suit is Constant.suit_str_to_int["Clubs"] \
-                    and self.game.player_two.hand[i].value is Constant.value_str_to_int["2"]:
+            elif self.game.player_two.hand[i].suit is Constant.Suit.Clubs \
+                    and self.game.player_two.hand[i].value is Constant.Value.Two:
                 CardLogging.log_file.log('PlayingState: 2 of clubs found P2')
                 return self.game.player_two
 
-            elif self.game.player_three.hand[i].suit is Constant.suit_str_to_int["Clubs"] \
-                    and self.game.player_three.hand[i].value is Constant.value_str_to_int["2"]:
+            elif self.game.player_three.hand[i].suit is Constant.Suit.Clubs \
+                    and self.game.player_three.hand[i].value is Constant.Value.Two:
                 CardLogging.log_file.log('PlayingState: 2 of clubs found P3')
                 return self.game.player_three
 
-            elif self.game.player_four.hand[i].suit is Constant.suit_str_to_int["Clubs"] \
-                    and self.game.player_four.hand[i].value is Constant.value_str_to_int["2"]:
+            elif self.game.player_four.hand[i].suit is Constant.Suit.Clubs \
+                    and self.game.player_four.hand[i].value is Constant.Value.Two:
                 CardLogging.log_file.log('PlayingState: 2 of clubs found P4')
                 return self.game.player_four
         CardLogging.log_file.log('---PlayingState find_player_with_two_of_spades() exit---')
@@ -828,11 +828,11 @@ class ScoringState(State):
         points = 0
         for card_ui in player.tricks:
             card = card_ui.card
-            if card.suit is Constant.suit_str_to_int["Hearts"]:
+            if card.suit is Constant.Suit.Hearts:
                 CardLogging.log_file.log('ScoringState: Hearts found')
                 points += 1
-            elif card.suit is Constant.suit_str_to_int["Spades"]:
-                if card.value is Constant.value_str_to_int["Queen"]:
+            elif card.suit is Constant.Suit.Spades:
+                if card.value is Constant.Value.Queen:
                     CardLogging.log_file.log('ScoringState: Queen of Spades found')
                     points += 13
 

@@ -1,7 +1,7 @@
 from CardEngine import Engine
 from StateMachine import StateMachine
 from StateMachine import State
-import AI
+from Core.AI import AI
 import Constant
 import pygame
 
@@ -95,7 +95,7 @@ class Hearts:
     def load_sprites(self):
         for suit in range(1, 5):
             for value in range(2, 15):
-                name = Constant.value_int_to_str[value] + " of " + Constant.suit_int_to_str[suit]
+                name = Constant.value_str[value] + " of " + Constant.suit_str[suit]
                 sprite = pygame.image.load(self.imagePath + name + self.imageType)
                 self.front_sprites[name] = sprite
 
@@ -153,7 +153,7 @@ class Hearts:
                 card_ui.card.owner = self.player_four
                 four_y -= 25
 
-            if card.value is Constant.value_str_to_int["Ace"] and card.suit is Constant.suit_str_to_int["Spades"]:
+            if card.value is Constant.Value.Ace and card.suit is Constant.Suit.Spades:
                 card_ui.load_sound_file("Sound/The Ace of Spades.wav")
 
         return
@@ -161,7 +161,7 @@ class Hearts:
     def create_card_ui(self):
         z = 0
         for card in self.deck:
-            front_sprite_name = Constant.value_int_to_str[card.value] + " of " + Constant.suit_int_to_str[card.suit]
+            front_sprite_name = Constant.value_str[card.value] + " of " + Constant.suit_str[card.suit]
             back_sprite_name = "Card Back 1"
 
             front_sprite = self.front_sprites[front_sprite_name]
