@@ -1,6 +1,8 @@
 from CardEngine import Engine
 from Core import CardLogging
 from Core import Constant
+from Core.AI import _DecisionTree as DecisionTree
+
 
 class HumanAI:
     player = None
@@ -416,3 +418,110 @@ class ComputerAI:
         if num_cards_in_suit <= (3 - len(cards_to_pass)):
             cards_to_move = self.get_highest_cards(suit, cards_to_pass)
             Engine.CardEngine.transfer_list(cards_to_move, cards_to_pass)
+
+
+class PassingDecisionTree:
+
+    _base_node = None
+
+    def __init__(self):
+        # Check for queen of spades to pass, then check ace or king of spades
+        queen_of_spades_check = DecisionTree.CardCheckNode(Constant.Suit.Clubs, Constant.Value.Queen,
+                                                           Constant.Check.PlayerHand)
+        king_of_spades_check = DecisionTree.CardCheckNode(Constant.Suit.Clubs, Constant.Value.King,
+                                                          Constant.Check.PlayerHand)
+        ace_of_spades_check = DecisionTree.CardCheckNode(Constant.Suit.Clubs, Constant.Value.King,
+                                                         Constant.Check.PlayerHand)
+
+        # Empty rest of a particular suit if possible
+        clear_hearts = DecisionTree.NumberInSuitCheckNode(Constant.Suit.Hearts, Constant.Check.PlayerHand)
+        clear_spades = DecisionTree.NumberInSuitCheckNode(Constant.Suit.Spades, Constant.Check.PlayerHand)
+        clear_diamonds = DecisionTree.NumberInSuitCheckNode(Constant.Suit.Diamonds, Constant.Check.PlayerHand)
+        clear_clubs = DecisionTree.NumberInSuitCheckNode(Constant.Suit.Clubs, Constant.Check.PlayerHand)
+
+        # Remove highest card of particular suit
+        suit_check_hearts = DecisionTree.SuitCheckNode(Constant.Suit.Hearts, Constant.Check.PlayerHand)
+        suit_check_spades = DecisionTree.SuitCheckNode(Constant.Suit.Spades, Constant.Check.PlayerHand)
+        suit_check_diamonds = DecisionTree.SuitCheckNode(Constant.Suit.Diamonds, Constant.Check.PlayerHand)
+        suit_check_clubs = DecisionTree.SuitCheckNode(Constant.Suit.Clubs, Constant.Check.PlayerHand)
+
+        # Leaf node to pick highest of each card
+        highest_hearts = DecisionTree.SelectHighestValueLeaf()
+        highest_spades = DecisionTree.SelectHighestValueLeaf()
+        highest_diamonds = DecisionTree.SelectHighestValueLeaf()
+        highest_clubs = DecisionTree.SelectHighestValueLeaf()
+
+        # Leaf node to select particular cards
+        select_queen_of_spades = DecisionTree.SelectCardLeaf()
+        select_king_of_spades = DecisionTree.SelectCardLeaf()
+        select_ace_of_spades = DecisionTree.SelectCardLeaf()
+
+        # Setup base node to start decision tree
+        self.base_node = queen_of_spades_check
+
+        # Setup Queen of Spades Node
+        queen_of_spades_check.pass_node = select_queen_of_spades
+        queen_of_spades_check.fail_node = ace_of_spades_check
+
+        # Setup Ace of Spades Node
+        ace_of_spades_check.pass_node = select_ace_of_spades
+        ace_of_spades_check.fail_node = king_of_spades_check
+
+        # Setup King of Spades Node
+        king_of_spades_check.pass_node = select_king_of_spades
+        king_of_spades_check.fail_node = clear_hearts
+
+        # Setup clear hearts
+        clear_hearts.pass_node = highest_hearts
+        clear_hearts.fail_node = clear_diamonds
+
+        # Setup clear diamonds
+        clear_diamonds.pass_node = highest_diamonds
+        clear_diamonds.fail_node = clear_clubs
+
+        # Setup clear clubs
+        clear_clubs.pass_node = highest_clubs
+        clear_clubs.fail_node = clear_spades
+
+        # Setup clear spades
+        clear_spades.pass_node = highest_spades
+        clear_spades.fail_node = suit_check_hearts
+
+        # Setup suit check hearts
+        suit_check_hearts.pass_node = highest_hearts
+        suit_check_hearts.fail_node = suit_check_diamonds
+
+        # Setup suit check diamonds
+        suit_check_diamonds.pass_node = highest_diamonds
+        suit_check_diamonds.fail_node = suit_check_clubs
+
+        # Setup suit check clubs
+        suit_check_clubs.pass_node = highest_clubs
+        suit_check_clubs.fail_node = suit_check_spades
+
+        # Setup suit check spades
+        suit_check_spades.pass_node = highest_spades
+        suit_check_spades.fail_node = None
+
+    def set_base_node(self, base_node):
+        self._base_node = base_node
+    def get_base_node(self):
+        return self._base_node
+
+    base_node = property(get_base_node, set_base_node)
+
+
+class PlayingDecisionTree:
+
+    _base_node = None
+
+    def __init__(self):
+        self.base_node = None
+
+    def set_base_node(self, base_node):
+        self._base_node = base_node
+
+    def get_base_node(self):
+        return self._base_node
+
+    base_node = property(get_base_node, set_base_node)

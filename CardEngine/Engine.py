@@ -164,6 +164,7 @@ class Card(UI.UIElement):
         self._update()
 
     def play_sound(self):
+        print "Play sound called"
         if self._sound is not None:
             print pygame.time.get_ticks()
             print self._start_time

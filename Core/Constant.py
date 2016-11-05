@@ -3,6 +3,7 @@ class Enum:
         return
 
 
+# Constants for representing cards
 class Suit(Enum):
     Empty = 0
     Clubs = 1
@@ -46,3 +47,19 @@ value_str = {Value.Ace: "Ace",
              Value.Jack: "Jack",
              Value.Queen: "Queen",
              Value.King: "King"}
+
+
+# Constants used for Actions and Decisions for AI
+class Check(Enum):
+    Empty = 0
+    TrickPile = 1
+    PlayerHand = 2
+
+
+class ComparisonType(Enum):
+    Empty = 0
+    Equal = 1
+    LessThan = 2
+    LessThanOrEqual = 3
+    GreaterThan = 4
+    GreaterThanOrEqual = 5
