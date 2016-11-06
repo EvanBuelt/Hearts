@@ -2,7 +2,7 @@ from CardEngine import Engine
 from Core import CardLogging
 from Core import Constant
 from Core.AI import _DecisionTree as DecisionTree
-
+import copy
 
 class HumanAI:
     player = None
@@ -81,6 +81,7 @@ class HumanAI:
 class ComputerAI:
     def __init__(self):
         self.player = None
+        self.decision_tree = PassingDecisionTree()
         return
 
     def set_player(self, player):
@@ -88,7 +89,18 @@ class ComputerAI:
 
     def pass_cards(self, computer_player):
         CardLogging.log_file.log('ComputerAI: ' + self.player.name + ': pass cards')
-        computer_player.passing = self.determine_cards_to_pass()
+
+        cards_to_pass = []
+
+        for i in range(0, 3):
+            card = self.decision_tree.process(self.player, self.player.hand, [])
+            Engine.CardEngine.transfer_card(card, self.player.hand, cards_to_pass)
+
+        computer_player.passing = copy.copy(cards_to_pass)
+
+        # Workaround as somewhere I use transfer cards function to transfer from players hand, and not the passing hand
+        Engine.CardEngine.transfer_list(cards_to_pass, self.player.hand)
+
         return
 
     def play_card(self, current_suit, trick_pile):
@@ -426,11 +438,11 @@ class PassingDecisionTree:
 
     def __init__(self):
         # Check for queen of spades to pass, then check ace or king of spades
-        queen_of_spades_check = DecisionTree.CardCheckNode(Constant.Suit.Clubs, Constant.Value.Queen,
+        queen_of_spades_check = DecisionTree.CardCheckNode(Constant.Suit.Spades, Constant.Value.Queen,
                                                            Constant.Check.PlayerHand)
-        king_of_spades_check = DecisionTree.CardCheckNode(Constant.Suit.Clubs, Constant.Value.King,
+        king_of_spades_check = DecisionTree.CardCheckNode(Constant.Suit.Spades, Constant.Value.King,
                                                           Constant.Check.PlayerHand)
-        ace_of_spades_check = DecisionTree.CardCheckNode(Constant.Suit.Clubs, Constant.Value.King,
+        ace_of_spades_check = DecisionTree.CardCheckNode(Constant.Suit.Spades, Constant.Value.Ace,
                                                          Constant.Check.PlayerHand)
 
         # Empty rest of a particular suit if possible
@@ -452,9 +464,9 @@ class PassingDecisionTree:
         highest_clubs = DecisionTree.SelectHighestValueLeaf()
 
         # Leaf node to select particular cards
-        select_queen_of_spades = DecisionTree.SelectCardLeaf()
-        select_king_of_spades = DecisionTree.SelectCardLeaf()
-        select_ace_of_spades = DecisionTree.SelectCardLeaf()
+        select_queen_of_spades = DecisionTree.SelectCardLeaf(Constant.Suit.Spades, Constant.Value.Queen)
+        select_king_of_spades = DecisionTree.SelectCardLeaf(Constant.Suit.Spades, Constant.Value.King)
+        select_ace_of_spades = DecisionTree.SelectCardLeaf(Constant.Suit.Spades, Constant.Value.Ace)
 
         # Setup base node to start decision tree
         self.base_node = queen_of_spades_check
@@ -502,6 +514,9 @@ class PassingDecisionTree:
         # Setup suit check spades
         suit_check_spades.pass_node = highest_spades
         suit_check_spades.fail_node = None
+
+    def process(self, player, possible_cards, trick_pile):
+        return self.base_node.process(player, possible_cards, trick_pile)
 
     def set_base_node(self, base_node):
         self._base_node = base_node

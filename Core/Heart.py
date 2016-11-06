@@ -20,19 +20,24 @@ class Player:
         self.ai.set_player(self)
 
     def sort_hand(self):
-        for i in range(0, len(self.hand)):
-            for j in range(0, i):
-                if self.hand[j].suit > self.hand[j + 1].suit:
-                    temp = self.hand[j]
-                    self.hand[j] = self.hand[j + 1]
-                    self.hand[j + 1] = temp
 
-        for i in range(0, len(self.hand)):
-            for j in range(0, i):
-                if self.hand[j].value > self.hand[j + 1].value:
-                    temp = self.hand[j]
-                    self.hand[j] = self.hand[j + 1]
-                    self.hand[j + 1] = temp
+        # Selection sort by value first
+        for i in range(1, len(self.hand)):
+            j = i
+            while j > 0 and self.hand[j - 1].value > self.hand[j].value:
+                temp = self.hand[j]
+                self.hand[j] = self.hand[j - 1]
+                self.hand[j - 1] = temp
+                j -= 1
+
+        # Selection sort by suit second
+        for i in range(1, len(self.hand)):
+            j = i
+            while j > 0 and self.hand[j - 1].suit > self.hand[j].suit:
+                temp = self.hand[j]
+                self.hand[j] = self.hand[j - 1]
+                self.hand[j - 1] = temp
+                j -= 1
 
     def set_hand_owner(self):
         for card in self.hand:
