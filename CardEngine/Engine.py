@@ -31,7 +31,7 @@ class StandardPlayingCard:
         self.owner = owner
 
 
-class Card(UI.UIElement):
+class CardUI(UI.UIElement):
     def __init__(self, engine, card=None, front_surface=None, back_surface=None, rect=None, x=0, y=0, z=0,
                  angle_degrees=0, callback_function=None):
 
@@ -180,32 +180,27 @@ class Card(UI.UIElement):
     def _prop_set_callback_function(self, new_callback_function):
         self._callbackFunction = new_callback_function
         self._update()
-
     def _prop_get_callback_function(self):
         return self._callbackFunction
 
     def _prop_set_front_view(self, front_view):
         self._frontView = front_view
         self._update()
-
     def _prop_get_front_view(self):
         return self._frontView
 
     def _prop_set_angle_radians(self, angle_radians):
         self._angle = angle_radians * 180 / 3.1415926
-
     def _prop_get_angle_radians(self):
         return self._angle * 3.1415926 / 180
 
     def _prop_set_angle_degrees(self, angle_degrees):
         self._angle = angle_degrees
-
     def _prop_get_angle_degrees(self):
         return self._angle
 
     def _prop_get_sound(self):
         return self._sound
-
     def _prop_set_sound(self, sound):
         self._sound = sound
 

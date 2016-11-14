@@ -14,6 +14,6 @@ class Logger:
                     _file.write(str(self.number) + '. ' + data + '\n')
                     self.number += 1
 
-now = datetime.datetime.now()
-log_file = Logger('Core\Logs\Hearts_' + str(now.year) + '_' + str(now.month) + '_' + str(now.day) + '_' + str(now.hour) +
-                  '_' + str(now.minute) + '_' + str(now.second) + '.txt')
+_now = datetime.datetime.now()
+log_file = Logger('Core\Logs\Hearts_' + str(_now.year) + '_' + str(_now.month) + '_' + str(_now.day) + '_' +
+                  str(_now.hour) + '_' + str(_now.minute) + '_' + str(_now.second) + '.txt')

@@ -1,6 +1,6 @@
 import pygame
-
-import CardEngine.Engine as Cards
+from CardEngine import Engine as Cards
+from CardEngine import UI
 from Core import CardLogging
 from Core import Constant
 
@@ -14,7 +14,7 @@ class InheritanceError(Exception):
         return repr(self.value)
 
 
-class State:
+class State(object):
     def __init__(self, game, name):
         CardLogging.log_file.log('---State __init__() enter---')
         self.game = game
@@ -240,6 +240,7 @@ class PassingState(State):
         player_three_pass = player_three.passing
         player_four_pass = player_four.passing
 
+        '''
         print ""
         print "Pass 1"
         print ""
@@ -309,6 +310,7 @@ class PassingState(State):
         print ""
         print self.passing_order
         print ""
+        '''
 
         if self.passing_order is "Left":
             CardLogging.log_file.log('PassingState: Pass cards Left')
@@ -353,6 +355,8 @@ class PassingState(State):
             CardLogging.log_file.log('PassingState: Pass cards to None')
 
         self.get_next_passing()
+
+        '''
         print len(player_one_pass)
         print len(player_two_pass)
         print len(player_three_pass)
@@ -365,6 +369,7 @@ class PassingState(State):
         print ""
         print self.passing_order
         print ""
+        '''
 
         CardLogging.log_file.log('---PassingState passing_round() exit---')
         return
@@ -396,9 +401,9 @@ class PlayingState(State):
         CardLogging.log_file.log('PlayingState: Set current card to None')
 
         self.currentPlayer = None
-        self.currentSuit = Constant.Suit.Clubs
+        self.game.currentSuit = Constant.Suit.Clubs
         self.trickPile = []
-        self.heartsBroken = False
+        self.game.heartsBroken = False
         self.currentCard = None
 
         self.delay_trick_pile = False
@@ -427,9 +432,9 @@ class PlayingState(State):
         CardLogging.log_file.log('PlayingState: Set hearts broken to False')
         CardLogging.log_file.log('PlayingState: Set current card to None')
 
-        self.currentSuit = Constant.Suit.Clubs
         self.trickPile = []
-        self.heartsBroken = False
+        self.game.heartsBroken = False
+        self.game.current_suit = Constant.Suit.Clubs
         self.currentCard = None
 
         self.currentPlayer = self.find_player_with_two_of_spades()
@@ -446,8 +451,8 @@ class PlayingState(State):
         if self.currentPlayer is self.game.player_one:
             self.currentCard = self.currentPlayer.handle_keypress(event)
             if self.currentCard is not None:
-                if self.currentSuit is None:
-                    self.currentSuit = self.currentCard.card.suit
+                if self.game.currentSuit is None:
+                    self.game.currentSuit = self.currentCard.card.suit
 
                 self.move_card_to_trick_pile(self.currentCard.card)
                 self.set_next_player()
@@ -460,7 +465,7 @@ class PlayingState(State):
     def handle_card_click(self, card_ui):
         CardLogging.log_file.log('---PlayingState handle_card_click() enter---')
         if self.currentPlayer is self.game.player_one:
-            self.currentPlayer.handle_card_click(card_ui, self.currentSuit)
+            self.currentPlayer.handle_card_click(card_ui, self.game.currentSuit)
         CardLogging.log_file.log('---PlayingState handle_card_click() exit---')
         return
 
@@ -558,11 +563,13 @@ class PlayingState(State):
         while len(self.trickPile) > 0:
 
             card_ui = self.trickPile[0]
+            if card_ui.card.suit is Constant.Suit.Hearts:
+                self.game.heartsBroken = True
             CardLogging.log_file.log('PlayingState: Transfer card: ' + Constant.value_str[card_ui.card.value] + ' of ' +
                                      Constant.suit_str[card_ui.card.suit])
             Cards.CardEngine.transfer_card(card_ui, self.trickPile, trick_player.tricks)
         CardLogging.log_file.log('---PlayingState move_trick_pile_to_player() exit---')
-        self.currentSuit = None
+        self.game.currentSuit = None
 
     def find_player_with_two_of_spades(self):
         CardLogging.log_file.log('---PlayingState find_player_with_two_of_spades() enter---')
@@ -594,11 +601,11 @@ class PlayingState(State):
     def handle_computer_player_turn(self):
         CardLogging.log_file.log('---PlayingState handle_computer_player_turn() enter---')
         CardLogging.log_file.log('PlayingState: Allow computer to play card')
-        card = self.currentPlayer.play_card(self.currentSuit, self.trickPile)
+        card = self.currentPlayer.play_card(self.game.currentSuit, self.trickPile)
 
-        if self.currentSuit is None:
-            self.currentSuit = card.suit
-            CardLogging.log_file.log('PlayingState: Set suit to ' + str(self.currentSuit))
+        if self.game.currentSuit is None:
+            self.game.currentSuit = card.suit
+            CardLogging.log_file.log('PlayingState: Set suit to ' + str(self.game.currentSuit))
 
         self.move_card_to_trick_pile(card)
         self.set_next_player()
@@ -634,9 +641,9 @@ class PlayingState(State):
             CardLogging.log_file.log('PlayingState: Set card visible to false')
             card_ui.set_location(1200, 1200)
             card_ui.visible = False
-            if card_ui.card.suit is self.currentSuit:
+            if card_ui.card.suit is self.game.currentSuit:
                 if card_ui.card.value > highest_value:
-                    CardLogging.log_file.log('PlayingState: Highest card of suit ' + str(self.currentSuit))
+                    CardLogging.log_file.log('PlayingState: Highest card of suit ' + str(self.game.currentSuit))
                     highest_card = card_ui
                     highest_value = card_ui.card.value
                     CardLogging.log_file.log('PlayingState: Value of card is ' + str(highest_value))
@@ -689,10 +696,54 @@ class ScoringState(State):
     def __init__(self, game, name):
         CardLogging.log_file.log('---ScoringState __init__() enter---')
         State.__init__(self, game, name)
-        self.player_one_points = 0
-        self.player_two_points = 0
-        self.player_three_points = 0
-        self.player_four_points = 0
+        self.player_one_points = [0]
+        self.player_two_points = [0]
+        self.player_three_points = [0]
+        self.player_four_points = [0]
+
+        self.player_one_point_text_list = []
+        self.player_two_point_text_list = []
+        self.player_three_point_text_list = []
+        self.player_four_point_text_list = []
+
+        self.player_one_total_points = 0
+        self.player_two_total_points = 0
+        self.player_three_total_points = 0
+        self.player_four_total_points = 0
+
+        self.button = UI.Button(Cards.CardEngine, rect=pygame.Rect((340, 400), (120, 30)))
+        self.button.callbackFunction = self.handle_button_press
+        self.button.visible = False
+        self.button.text = "Start next round"
+
+        size = (60, 30)
+        y = 30
+        p1_loc = (280, y)
+        p2_loc = (340, y)
+        p3_loc = (400, y)
+        p4_loc = (460, y)
+
+        player_one_point_text = UI.Text(Cards.CardEngine, rect=pygame.Rect(p1_loc, size))
+        player_one_point_text.text = str(self.player_one_points[0])
+        player_one_point_text.visible = False
+
+        player_two_point_text = UI.Text(Cards.CardEngine, rect=pygame.Rect(p2_loc, size))
+        player_two_point_text.text = str(self.player_two_points[0])
+        player_two_point_text.visible = False
+
+        player_three_point_text = UI.Text(Cards.CardEngine, rect=pygame.Rect(p3_loc, size))
+        player_three_point_text.text = str(self.player_three_points[0])
+        player_three_point_text.visible = False
+
+        player_four_point_text = UI.Text(Cards.CardEngine, rect=pygame.Rect(p4_loc, size))
+        player_four_point_text.text = str(self.player_four_points[0])
+        player_four_point_text.visible = False
+
+        self.player_one_point_text_list.append(player_one_point_text)
+        self.player_two_point_text_list.append(player_two_point_text)
+        self.player_three_point_text_list.append(player_three_point_text)
+        self.player_four_point_text_list.append(player_four_point_text)
+
         CardLogging.log_file.log('---ScoringState __init__() exit---')
 
     def enter(self):
@@ -720,23 +771,62 @@ class ScoringState(State):
             self.handle_shooting_the_moon(player_one_round_points, player_two_round_points,
                                           player_three_round_points, player_four_round_points)
 
-        self.player_one_points += player_one_round_points
-        self.player_two_points += player_two_round_points
-        self.player_three_points += player_three_round_points
-        self.player_four_points += player_four_round_points
+        self.player_one_total_points += player_one_round_points
+        self.player_two_total_points += player_two_round_points
+        self.player_three_total_points += player_three_round_points
+        self.player_four_total_points += player_four_round_points
+
+        self.player_one_points.append(player_one_round_points)
+        self.player_two_points.append(player_two_round_points)
+        self.player_three_points.append(player_three_round_points)
+        self.player_four_points.append(player_four_round_points)
+
+        size = (60, 30)
+        y = len(self.player_one_points)*30
+        p1_loc = (280, y)
+        p2_loc = (340, y)
+        p3_loc = (400, y)
+        p4_loc = (460, y)
+
+        player_one_point_text = UI.Text(Cards.CardEngine, rect=pygame.Rect(p1_loc, size))
+        player_one_point_text.visible = False
+        player_one_point_text.text = str(self.player_one_total_points)
+        self.player_one_point_text_list.append(player_one_point_text)
+
+        player_two_point_text = UI.Text(Cards.CardEngine, rect=pygame.Rect(p2_loc, size))
+        player_two_point_text.visible = False
+        player_two_point_text.text = str(self.player_two_total_points)
+        self.player_two_point_text_list.append(player_two_point_text)
+
+        player_three_point_text = UI.Text(Cards.CardEngine, rect=pygame.Rect(p3_loc, size))
+        player_three_point_text.visible = False
+        player_three_point_text.text = str(self.player_three_total_points)
+        self.player_three_point_text_list.append(player_three_point_text)
+
+        player_four_point_text = UI.Text(Cards.CardEngine, rect=pygame.Rect(p4_loc, size))
+        player_four_point_text.visible = False
+        player_four_point_text.text = str(self.player_four_total_points)
+        self.player_four_point_text_list.append(player_four_point_text)
+
+        for text in self.player_one_point_text_list:
+            text.visible = True
+
+        for text in self.player_two_point_text_list:
+            text.visible = True
+
+        for text in self.player_three_point_text_list:
+            text.visible = True
+
+        for text in self.player_four_point_text_list:
+            text.visible = True
+
+        self.button.visible = True
 
         CardLogging.log_file.log('ScoringState: P1 Points: ' + str(self.player_one_points))
         CardLogging.log_file.log('ScoringState: P2 Points: ' + str(self.player_two_points))
         CardLogging.log_file.log('ScoringState: P3 Points: ' + str(self.player_three_points))
         CardLogging.log_file.log('ScoringState: P4 Points: ' + str(self.player_four_points))
 
-        if self.any_player_lost():
-            CardLogging.log_file.log('ScoringState: Setting next state to None.  A player lost')
-            self.next_state = None
-
-        else:
-            CardLogging.log_file.log('ScoringState: Setting next state to Setup.')
-            self.next_state = "Setup"
         CardLogging.log_file.log('---ScoringState enter() exit---')
         return
 
@@ -748,6 +838,21 @@ class ScoringState(State):
         self.game.player_three.tricks = []
         self.game.player_four.tricks = []
         self.next_state = None
+
+        for text in self.player_one_point_text_list:
+            text.visible = False
+
+        for text in self.player_two_point_text_list:
+            text.visible = False
+
+        for text in self.player_three_point_text_list:
+            text.visible = False
+
+        for text in self.player_four_point_text_list:
+            text.visible = False
+
+        self.button.visible = False
+
         CardLogging.log_file.log('---ScoringState exit() exit---')
 
     def handle_keypress(self, event):
@@ -768,22 +873,22 @@ class ScoringState(State):
     def any_player_lost(self):
         CardLogging.log_file.log('---ScoringState any_player_lost() enter---')
         CardLogging.log_file.log('ScoringState: any player lost?')
-        if self.player_one_points >= 100:
+        if self.player_one_total_points >= 100:
             CardLogging.log_file.log('ScoringState: P1 had 100 or more points')
             CardLogging.log_file.log('---ScoringState any_player_lost() exit---')
             return True
 
-        if self.player_two_points >= 100:
+        if self.player_two_total_points >= 100:
             CardLogging.log_file.log('ScoringState: P2 had 100 or more points')
             CardLogging.log_file.log('---ScoringState any_player_lost() exit---')
             return True
 
-        if self.player_three_points >= 100:
+        if self.player_three_total_points >= 100:
             CardLogging.log_file.log('ScoringState: P3 had 100 or more points')
             CardLogging.log_file.log('---ScoringState any_player_lost() exit---')
             return True
 
-        if self.player_four_points >= 100:
+        if self.player_four_total_points >= 100:
             CardLogging.log_file.log('ScoringState: P4 had 100 or more points')
             CardLogging.log_file.log('---ScoringState any_player_lost() exit---')
             return True
@@ -872,3 +977,12 @@ class ScoringState(State):
 
         CardLogging.log_file.log('---ScoringState handle_shooting_the_moon() exit---')
         return p1_round_points, p2_round_points, p3_round_points, p4_round_points
+
+    def handle_button_press(self, button):
+        if self.any_player_lost():
+            CardLogging.log_file.log('ScoringState: Setting next state to None.  A player lost')
+            self.next_state = None
+
+        else:
+            CardLogging.log_file.log('ScoringState: Setting next state to Setup.')
+            self.next_state = "Setup"

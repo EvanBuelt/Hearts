@@ -1,8 +1,10 @@
+import copy
+
 from CardEngine import Engine
 from Core import CardLogging
 from Core import Constant
-from Core.AI import _DecisionTree as DecisionTree
-import copy
+from Core.Player.AI import _DecisionTree as DecisionTree
+
 
 class HumanAI:
     player = None
@@ -81,7 +83,7 @@ class HumanAI:
 class ComputerAI:
     def __init__(self):
         self.player = None
-        self.decision_tree = PassingDecisionTree()
+        self.decision_tree = _PassingDecisionTree()
         return
 
     def set_player(self, player):
@@ -432,7 +434,7 @@ class ComputerAI:
             Engine.CardEngine.transfer_list(cards_to_move, cards_to_pass)
 
 
-class PassingDecisionTree:
+class _PassingDecisionTree:
 
     _base_node = None
 
@@ -526,7 +528,7 @@ class PassingDecisionTree:
     base_node = property(get_base_node, set_base_node)
 
 
-class PlayingDecisionTree:
+class _PlayingDecisionTree:
 
     _base_node = None
 

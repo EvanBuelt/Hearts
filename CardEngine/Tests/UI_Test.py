@@ -1,7 +1,8 @@
-__author__ = 'Evan'
-import UI
+import CardEngine.UI
 import sys
 import pygame
+
+__author__ = 'Evan'
 
 
 def display_text_input(textbox_object):
@@ -21,17 +22,17 @@ def test():
     my_test_engine = TestEngine(400, 300, 'Testing different UI elements')
 
     # Create UI elements
-    text1 = UI.Text(my_test_engine, rect=pygame.Rect(30, 30, 60, 20), text='Hello')
-    text2 = UI.Text(my_test_engine, rect=pygame.Rect(30, 65, 60, 20), text='World!',
+    text1 = CardEngine.UI.Text(my_test_engine, rect=pygame.Rect(30, 30, 60, 20), text='Hello')
+    text2 = CardEngine.UI.Text(my_test_engine, rect=pygame.Rect(30, 65, 60, 20), text='World!',
                     background_color=(200, 200, 200, 50))
-    text3 = UI.Text(my_test_engine, rect=pygame.Rect(30, 100, 150, 20), z=5, text='0', background_color=(70, 200, 70))
-    text4 = UI.Text(my_test_engine, rect=pygame.Rect(100, 120, 120, 20), z=4, text='')
-    textbox1 = UI.TextBox(my_test_engine, rect=pygame.Rect(100, 30, 180, 20), background_text='Username')
-    textbox2 = UI.TextBox(my_test_engine, rect=pygame.Rect(100, 65, 180, 20), background_text='Password')
-    checkbox1 = UI.CheckBox(my_test_engine, rect=pygame.Rect(290, 30, 14, 14))
-    checkbox2 = UI.CheckBox(my_test_engine, rect=pygame.Rect(290, 65, 14, 14))
-    button1 = UI.Button(my_test_engine, rect=pygame.Rect(310, 30, 70, 20), text='Press me')
-    button2 = UI.Button(my_test_engine, rect=pygame.Rect(310, 65, 50, 20), text='Don\'t')
+    text3 = CardEngine.UI.Text(my_test_engine, rect=pygame.Rect(30, 100, 150, 20), z=5, text='0', background_color=(70, 200, 70))
+    text4 = CardEngine.UI.Text(my_test_engine, rect=pygame.Rect(100, 120, 120, 20), z=4, text='')
+    textbox1 = CardEngine.UI.TextBox(my_test_engine, rect=pygame.Rect(100, 30, 180, 20), background_text='Username')
+    textbox2 = CardEngine.UI.TextBox(my_test_engine, rect=pygame.Rect(100, 65, 180, 20), background_text='Password')
+    checkbox1 = CardEngine.UI.CheckBox(my_test_engine, rect=pygame.Rect(290, 30, 14, 14))
+    checkbox2 = CardEngine.UI.CheckBox(my_test_engine, rect=pygame.Rect(290, 65, 14, 14))
+    button1 = CardEngine.UI.Button(my_test_engine, rect=pygame.Rect(310, 30, 70, 20), text='Press me')
+    button2 = CardEngine.UI.Button(my_test_engine, rect=pygame.Rect(310, 65, 50, 20), text='Don\'t')
 
     textbox1.set_callback(display_text_input)
     textbox2.set_callback(display_text_input)
@@ -98,7 +99,7 @@ class TestEngine:
 
 # Functions for testing each UI Element to ensure element works properly
 def test_text(ui_text):
-    if not isinstance(ui_text, UI.Text):
+    if not isinstance(ui_text, CardEngine.UI.Text):
         print 'Object not an instance of text, or derived instance of text'
         return
 
@@ -163,7 +164,7 @@ def test_text(ui_text):
 
 
 def test_textbox(ui_textbox):
-    if not isinstance(ui_textbox, UI.TextBox):
+    if not isinstance(ui_textbox, CardEngine.UI.TextBox):
         print 'Object not an instance of textbox, or derived instance of textbox'
         return
 

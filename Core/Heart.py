@@ -1,12 +1,13 @@
-from CardEngine import Engine
-from StateMachine import StateMachine
-from StateMachine import State
-from Core.AI import AI
-import Constant
 import pygame
 
+from CardEngine import Engine
+from Core.StateMachine import StateMachine
+from Core.StateMachine import State
+from Core.Player.AI import AI
+import Constant
 
-class Player:
+
+class Player(object):
     def __init__(self, name, ai):
         self.name = name
         self.ai = ai
@@ -58,14 +59,14 @@ class Player:
 
 class Hearts:
     def __init__(self, width=800, height=800):
+        # Initialize the pygame Engine
         Engine.CardEngine.init(width, height)
 
         # Initialize clock to limit fps
         self.clock = pygame.time.Clock()
 
         # Initialize the players for the game
-        # Bottom is Human Player. Goes clockwise for computers
-        # i.e. one is left, two is top, three is right
+        # Bottom is Human Player.  Goes clockwise for computers
         self.player_one = Player("Human", AI.HumanAI())
         self.player_two = Player("Sarah", AI.ComputerAI())
         self.player_three = Player("Jane", AI.ComputerAI())
@@ -79,7 +80,7 @@ class Hearts:
         self.front_sprites = {}
         self.back_sprites = {}
         self.card_ui_elements = []
-        self.imagePath = "img/Cards/"
+        self.imagePath = "Res/img/Cards/"
         self.imageType = ".png"
         self.load_sprites()
         self.create_card_ui()
@@ -93,6 +94,10 @@ class Hearts:
         self.stateMachine.add_state(State.ScoringState(self, "Scoring"), "Scoring")
 
         self.stateMachine.set_initial_state("Setup")
+
+        # Variables for playing
+        self.heartsBroken = False
+        self.currentSuit = Constant.Suit.Clubs
 
         # Link events to the correct functions
         Engine.CardEngine.keyPress += self.stateMachine.handle_keypress
@@ -171,12 +176,35 @@ class Hearts:
 
             front_sprite = self.front_sprites[front_sprite_name]
             back_sprite = self.back_sprites[back_sprite_name]
-            card_ui = Engine.Card(Engine.CardEngine, card, front_sprite, back_sprite, x=0, y=0, z=z,
+            card_ui = Engine.CardUI(Engine.CardEngine, card, front_sprite, back_sprite, x=0, y=0, z=z,
                                   callback_function=self.stateMachine.handle_card_click, angle_degrees=0)
 
             card_ui.visible = False
             self.card_ui_elements.append(card_ui)
             z += .1
+
+    def determine_playable_cards(self, hand):
+        playable_cards = []
+        # Player will play first card.  Can only play hearts if broken
+        if self.currentSuit is None:
+            for card in hand:
+                if not self.heartsBroken:
+                    if card.suit is not Constant.Suit.Hearts:
+                        playable_cards.append(card)
+                else:
+                    playable_cards.append(card)
+        # Otherwise, player is not going first, and player must follow the suit
+        else:
+            for card in hand:
+                if card.suit is self.currentSuit:
+                    playable_cards.append(card)
+
+        # Player either has no card of current suit or only has hearts left.  Therefore, player can play anything
+        if len(playable_cards) is 0:
+            for card in hand:
+                playable_cards.append(card)
+
+        return playable_cards
 
     def play(self):
         while True:

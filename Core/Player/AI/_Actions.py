@@ -4,12 +4,15 @@ import copy
 __author__ = 'Evan'
 
 
-class _Action:
+class _Action(object):
 
     _check = Constant.Check.Empty
 
     def __init__(self, check):
         self.check = check
+        return
+
+    def process(self, player, possible_cards, trick_pile):
         return
 
     def set_check(self, check):

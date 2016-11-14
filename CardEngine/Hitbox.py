@@ -1,12 +1,12 @@
 import math
 
 
-class SquareHitbox:
+class SquareHitbox(object):
     def __init__(self, x, y, width, height, angle):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
+        self._x = x
+        self._y = y
+        self._width = width
+        self._height = height
         self.angle = math.radians(angle)
 
         self.points = []
@@ -63,6 +63,140 @@ class SquareHitbox:
 
         for point in self.rotatedPoints:
             point.rotate_counterclockwise(x, y, self.angle)
+
+    def _prop_get_x(self):
+        return self._x
+    def _prop_set_x(self, x):
+        self._x = x
+
+    def _prop_get_y(self):
+        return self._y
+    def _prop_set_y(self, y):
+        self._y = y
+
+    def _prop_get_topleft(self):
+        return
+    def _prop_set_topleft(self, (x, y)):
+        return
+
+    def _prop_get_top(self):
+        return
+    def _prop_set_top(self, top):
+        return
+
+    def _prop_get_topright(self):
+        return
+    def _prop_set_topright(self, (x, y)):
+        return
+
+    def _prop_get_left(self):
+        return
+    def _prop_set_left(self, left):
+        return
+
+    def _prop_get_center(self):
+        return
+    def _prop_set_center(self, (x, y)):
+        return
+
+    def _prop_get_center_x(self):
+        return
+    def _prop_set_center_x(self, center_x):
+        return
+
+    def _prop_get_center_y(self):
+        return
+    def _prop_set_center_y(self, center_y):
+        return
+
+    def _prop_get_right(self):
+        return
+    def _prop_set_right(self, right):
+        return
+
+    def _prop_get_bottomleft(self):
+        return
+    def _prop_set_bottomleft(self, (x, y)):
+        return
+
+    def _prop_get_bottom(self):
+        return
+    def _prop_set_bottom(self, bottom):
+        return
+
+    def _prop_get_bottomright(self):
+        return
+    def _prop_set_bottomright(self, (x, y)):
+        return
+
+    def _prop_get_midtop(self):
+        return
+    def _prop_set_midtop(self, (x, y)):
+        return
+
+    def _prop_get_midleft(self):
+        return
+    def _prop_set_midleft(self, (x, y)):
+        return
+
+    def _prop_get_midbottom(self):
+        return
+    def _prop_set_midbottom(self, (x, y)):
+        return
+
+    def _prop_get_midright(self):
+        return
+    def _prop_set_midright(self, (x, y)):
+        return
+
+    def _prop_get_size(self):
+        return
+    def _prop_set_size(self, (width, height)):
+        return
+
+    def _prop_get_width(self):
+        return self._width
+    def _prop_set_width(self, width):
+        self._width = width
+
+    def _prop_get_height(self):
+        return self._height
+    def _prop_set_height(self, height):
+        self._height = height
+
+    def _prop_get_w(self):
+        return
+    def _prop_set_w(self, w):
+        return
+
+    def _prop_get_h(self):
+        return
+    def _prop_set_h(self, h):
+        return
+
+    x = property(_prop_get_x, _prop_set_x)
+    y = property(_prop_get_y, _prop_set_y)
+
+    topleft = property(_prop_get_topleft, _prop_set_topleft)
+    topright = property(_prop_get_topright, _prop_set_topright)
+    bottomleft = property(_prop_get_bottomleft, _prop_set_bottomleft)
+    bottomright = property(_prop_get_bottomright, _prop_set_bottomright)
+
+    left = property(_prop_get_left, _prop_set_left)
+    top = property(_prop_get_top, _prop_set_top)
+    right = property(_prop_get_right, _prop_set_right)
+    bottom = property(_prop_get_bottom, _prop_set_bottom)
+
+    midleft = property(_prop_get_midleft, _prop_set_midleft)
+    midtop = property(_prop_get_midtop, _prop_set_midtop)
+    midright = property(_prop_get_midright, _prop_set_midright)
+    midbottom = property(_prop_get_midbottom, _prop_set_midbottom)
+
+    size = property(_prop_get_size, _prop_set_size)
+    width = property(_prop_get_width, _prop_set_width)
+    height = property(_prop_get_height, _prop_set_height)
+    w = property(_prop_get_w, _prop_set_w)
+    h = property(_prop_get_h, _prop_set_h)
 
 
 class Point:

@@ -1,6 +1,6 @@
 import pygame
+import CardEngine.Engine
 
-pygame.font.init()
 UI_FONT = None
 
 BLACK = (0, 0, 0, 255)
@@ -14,65 +14,134 @@ GREEN = (24, 119, 24, 255)
 
 
 def init():
+    """
+    Initializes the Font used in the text
+    :return:
+    """
+    pygame.font.init()
     global UI_FONT
     UI_FONT = pygame.font.Font(pygame.font.match_font('gentiumbookbasic'), 20)
 
-# InheritanceError is used to ensure certain class methods are inherited.  Used for UIElement.
-class InheritanceError(Exception):
+
+class _InheritanceError(Exception):
+    """
+    Inheritance Error is used to ensure certain class methods are inherited.
+    """
     def __init__(self, value):
+        """
+        :param value: Message to be displayed when error is raised
+        :return:
+        """
         self.value = value
 
     def __str__(self):
+        """
+
+        :return: Returns message to be displayed for errors
+        """
         return repr(self.value)
 
 
-# Base UI Element to be used with an engine.  This should be inherited by every UI Element, as the engine
-# will expect to use the methods below.
 class UIElement(object):
-    def __init__(self, engine, rect, z):
-        if engine is not None:
-            engine.add_ui_element(self)
+    """
+    Element on the screen that interacts with user.  This is the base class that should be used when creating
+    new UI Elements.
 
-        # Every UI element will need an x, y, and z coordinate (in the form of a rect and z).
-        # Every UI element will also need to know if it is visible or not.
-        # Set location for text
+    The following methods must be overridden:
+    -render: Used to display the UI Element to the screen (or another pygame surface)
+    -_update: Updates internal elements
+    -handle_event: Function to handle pygame events from the engine.
+
+    Variables:
+    -rect: x and y location, as well as size of the image
+    -z: variable used to determine order in which UI Elements are displayed and handled
+    -visible: Used to determines if the UI Element is displayed and will handle events
+    """
+    def __init__(self, rect, z):
+        """
+        Initializes the UI Element for basic interaction with the engine
+        :param rect:
+        :param z:
+        :return:
+        """
+
+        # Set location of UI Element.  Defaulted to location 0, 0, and width 60 and height 30
         if rect is None:
-            self._rect = pygame.Rect(0, 0, 60, 30)
+            (x, y) = (0, 0)
+            (w, h) = (60, 30)
+            self._rect = pygame.Rect((x, y), (w, h))
         else:
             self._rect = pygame.Rect(rect)
         self._z = z
         self._visible = True
 
-    # Used to render an image to the screen.
+        # Adds the UI Element to the Card Engine
+        CardEngine.Engine.CardEngine.add_ui_element(self)
+
+    # Functions all subclasses must override
     def render(self, surface):
-        raise InheritanceError('Function not defined')
+        """Renders the current UI Element to the desired surface input"""
+        raise _InheritanceError('Function not defined')
 
-    # Used to update the internal state of the UI Element.
     def _update(self):
-        raise InheritanceError('Function not defined')
+        """Update the internal state of the UI Element"""
+        raise _InheritanceError('Function not defined')
 
-    # Used to set the location of the UI Element.
-    def set_location(self, x, y):
+    def handle_event(self, event):
+        """
+        Method to handle pygame events
+        :param event: Pygame event passed in by the Engine.
+        :return:
+        """
+        raise _InheritanceError('Function not defined')
+
+    # Common functions for location
+    def set_location(self, x, y, z=0):
+        """
+        Sets the top left location of a pygame rect
+        :param x: x location
+        :param y: y location
+        :param z: z location
+        :return:
+        """
         self._rect.topleft = (x, y)
+        self._z = z
         self._update()
 
-    def move(self, dx, dy, dz):
+    def move(self, dx, dy, dz=0):
+        """
+        Moves the UI Element by a given dx, dy, and a default dz of 0
+        :param dx: Moves the pygame rect dx units
+        :param dy: Moves the pygame rect dy units
+        :param dz: Optional parameter default to 0 that moves the UI Element in the z-direction
+        :return:
+        """
         (x, y) = self._rect.topleft
         self._rect.topleft = (x + dx, y + dy)
         self._z += dz
         self._update()
 
-    # Used to handle a pygame event.
-    def handle_event(self, event):
-        raise InheritanceError('Function not defined')
-
+    # Collision functions
     def collide(self, x, y):
+        """
+        Determines if a point collides with the UI Element
+        :param x: X location
+        :param y: Y location
+        :return:
+        """
         return self._rect.collidepoint(x, y)
+
+    def collide_ui(self, ui_element):
+        """
+        Determines if two UI Elements collide
+        :param ui_element: Other UI Element to check for collision
+        :return:
+        """
+        return self._rect.colliderect(ui_element.rect)
 
     # Properties to access variables
     def _prop_get_rect(self):
         return self._rect
-
     def _prop_set_rect(self, new_rect):
         self._rect = pygame.Rect(new_rect)
         self._update()
@@ -80,7 +149,6 @@ class UIElement(object):
 
     def _prop_get_z(self):
         return self._z
-
     def _prop_set_z(self, new_z):
         self._z = new_z
         self._update()
@@ -88,7 +156,6 @@ class UIElement(object):
 
     def _prop_get_visible(self):
         return self._visible
-
     def _prop_set_visible(self, visible):
         self._visible = visible
         self._update()
@@ -105,7 +172,7 @@ class UIElement(object):
 # method that will call the overridden methods.
 
 # As both classes share several commonalities, a base class is used.
-# This base class is internal to the UI module, and cannot handle events,
+# This base class is internal to the UI module, and does not handle events,
 # so it should not be referenced outside this module.
 
 # Standard UI Elements:
@@ -115,10 +182,10 @@ class UIElement(object):
 # Button (Input)
 
 class _BaseText(UIElement):
-    def __init__(self, engine, rect=None, z=0, text='',
+    def __init__(self, rect=None, z=0, text='',
                  background_color=TRANSPARENT, text_color=BLACK, font=None):
 
-        UIElement.__init__(self, engine, rect, z)
+        UIElement.__init__(self, rect, z)
 
         # Set color of background and text color
         self._bgColor = background_color
@@ -144,8 +211,8 @@ class _BaseText(UIElement):
 
     def _update(self):
         # Make syntax pretty
-        w = self._rect.width
-        h = self._rect.height
+        w = self.rect.width
+        h = self.rect.height
 
         # Update surface to fit size of rect
         self._surfaceNormal = pygame.Surface(self._rect.size).convert_alpha()
@@ -157,12 +224,8 @@ class _BaseText(UIElement):
         text_rect.center = int(w / 2), int(h / 2)
         self._surfaceNormal.blit(text_surf, text_rect)
 
-    def handle_event(self, event):
-        pass
-
     def _prop_get_text(self):
         return self._text
-
     def _prop_set_text(self, new_text):
         self._text = new_text
         self._update()
@@ -170,7 +233,6 @@ class _BaseText(UIElement):
 
     def _prop_get_font(self):
         return self._font
-
     def _prop_set_font(self, new_font):
         self._font = new_font
         self._update()
@@ -178,7 +240,6 @@ class _BaseText(UIElement):
 
     def _prop_get_background_color(self):
         return self._bgColor
-
     def _prop_set_background_color(self, new_background_color):
         self._bgColor = new_background_color
         self._update()
@@ -186,7 +247,6 @@ class _BaseText(UIElement):
 
     def _prop_get_text_color(self):
         return self._textColor
-
     def _prop_set_text_color(self, new_text_color):
         self._textColor = new_text_color
         self._update()
@@ -199,10 +259,10 @@ class _BaseText(UIElement):
 
 
 class _BaseTextBox(UIElement):
-    def __init__(self, engine, rect=None, z=0, background_text=None, background_color=WHITE,
+    def __init__(self, rect=None, z=0, background_text=None, background_color=WHITE,
                  input_text_color=BLACK, background_text_color=LIGHTGRAY, font=None):
 
-        UIElement.__init__(self, engine, rect, z)
+        UIElement.__init__(self, rect, z)
 
         # Set values for surface display
         self._bgColor = background_color
@@ -289,51 +349,42 @@ class _BaseTextBox(UIElement):
         pygame.draw.line(self._surfaceNormal, GRAY, (1, h - 2), (w - 2, h - 2))
         pygame.draw.line(self._surfaceNormal, GRAY, (w - 2, 1), (w - 2, h - 2))
 
-    def handle_event(self, event):
-        pass
-
+    def _prop_get_background_text(self):
+        return self._bgText
     def _prop_set_background_text(self, new_background_text):
         self._bgText = new_background_text
         self._update()
 
-    def _prop_get_background_text(self):
-        return self._bgText
-
+    def _prop_get_background_color(self):
+        return self._bgColor
     def _prop_set_background_color(self, new_background_color):
         self._bgColor = new_background_color
         self._update()
 
-    def _prop_get_background_color(self):
-        return self._bgColor
-
+    def _prop_get_input_text(self):
+        return self._inputText
     def _prop_set_input_text(self, new_input_text):
         self._listInputText = []
         for char in new_input_text:
             self._listInputText.append(char)
 
-    def _prop_get_input_text(self):
-        return self._inputText
-
+    def _prop_get_input_text_color(self):
+        return self._inputTextColor
     def _prop_set_input_text_color(self, new_input_text_color):
         self._inputTextColor = new_input_text_color
         self._update()
 
-    def _prop_get_input_text_color(self):
-        return self._inputTextColor
-
+    def _prop_get_background_text_color(self):
+        return self._bgTextColor
     def _prop_set_background_text_color(self, new_background_text_color):
         self._bgTextColor = new_background_text_color
         self._update()
 
-    def _prop_get_background_text_color(self):
-        return self._bgTextColor
-
+    def _prop_get_font(self):
+        return self._font
     def _prop_set_font(self, new_font):
         self._font = new_font
         self._update()
-
-    def _prop_get_font(self):
-        return self._font
 
     backgroundText = property(_prop_get_background_text, _prop_set_background_text)
     backgroundTextColor = property(_prop_get_background_text_color, _prop_set_background_text_color)
@@ -344,10 +395,10 @@ class _BaseTextBox(UIElement):
 
 
 class _BaseCheckBox(UIElement):
-    def __init__(self, engine, rect=None, z=0, background_color=WHITE):
+    def __init__(self, rect=None, z=0, background_color=WHITE):
         # Set position of element
 
-        UIElement.__init__(self, engine, rect, z)
+        UIElement.__init__(self, rect, z)
 
         self._bgColor = background_color
 
@@ -389,32 +440,27 @@ class _BaseCheckBox(UIElement):
         pygame.draw.line(self._surfaceChecked, GREEN, (3, int(h / 2)), (int(w / 2), h - 5), 3)
         pygame.draw.line(self._surfaceChecked, GREEN, (int(w / 2), h - 5), (w - 5, 4), 3)
 
-    def handle_event(self, event):
-        pass
-
+    def _prop_get_background_color(self):
+        return self._bgColor
     def _prop_set_background_color(self, new_background_color):
         self._bgColor = new_background_color
         self._update()
 
-    def _prop_get_background_color(self):
-        return self._bgColor
-
+    def _prop_get_is_checked(self):
+        return self._isChecked
     def _prop_set_is_checked(self, is_checked):
         self._isChecked = is_checked
         self._update()
-
-    def _prop_get_is_checked(self):
-        return self._isChecked
 
     backgroundColor = property(_prop_get_background_color, _prop_set_background_color)
     checked = property(_prop_get_is_checked, _prop_set_is_checked)
 
 
 class _BaseButton(UIElement):
-    def __init__(self, engine, rect=None, z=0, text='',
+    def __init__(self, rect=None, z=0, text='',
                  background_color=LIGHTGRAY, foreground_color=BLACK, font=None):
 
-        UIElement.__init__(self, engine, rect, z)
+        UIElement.__init__(self, rect, z)
 
         # set text and color to be applied to blank surfaces
         self._text = text
@@ -492,42 +538,29 @@ class _BaseButton(UIElement):
         # draw border for highlight button
         self._surfaceHighlight = self._surfaceNormal
 
-    def get_text(self):
-        return self._text
-
-    def set_text(self, new_text):
-        self._text = new_text
-
-    def handle_event(self, event):
-        pass
-
+    def _prop_get_background_color(self):
+        return self._bgColor
     def _prop_set_background_color(self, new_background_color):
         self._bgColor = new_background_color
         self._update()
 
-    def _prop_get_background_color(self):
-        return self._bgColor
-
+    def _prop_get_foreground_color(self):
+        return self._fgColor
     def _prop_set_foreground_color(self, new_foreground_color):
         self._fgColor = new_foreground_color
         self._update()
 
-    def _prop_get_foreground_color(self):
-        return self._fgColor
-
+    def _prop_get_font(self):
+        return self._font
     def _prop_set_font(self, new_font):
         self._visible = new_font
         self._update()
 
-    def _prop_get_font(self):
-        return self._font
-
+    def _prop_get_text(self):
+        return self._text
     def _prop_set_text(self, new_text):
         self._text = new_text
         self._update()
-
-    def _prop_get_text(self):
-        return self._text
 
     foregroundColor = property(_prop_get_foreground_color, _prop_set_foreground_color)
     backgroundColor = property(_prop_get_background_color, _prop_set_background_color)
@@ -537,28 +570,24 @@ class _BaseButton(UIElement):
 
 # The following UI Elements use a callback function
 class Text(_BaseText):
-    def __init__(self, engine, rect=None, z=0, text='',
+    def __init__(self, rect=None, z=0, text='',
                  background_color=TRANSPARENT, text_color=BLACK, font=None):
         # Let base handle most of initialization.  Base class should call _update.
-        _BaseText.__init__(self, engine, rect, z, text,
+        _BaseText.__init__(self, rect, z, text,
                            background_color, text_color, font)
 
 
 class TextBox(_BaseTextBox):
-    def __init__(self, engine, rect=None, z=0, background_text=None, background_color=WHITE,
+    def __init__(self, rect=None, z=0, background_text=None, background_color=WHITE,
                  input_text_color=BLACK, background_text_color=LIGHTGRAY,
                  font=None, callback_function=None):
 
         # Let base handle most of initialization.  Base class should call _update.
-        _BaseTextBox.__init__(self, engine, rect, z, background_text, background_color,
+        _BaseTextBox.__init__(self, rect, z, background_text, background_color,
                               input_text_color, background_text_color, font)
 
         # Set callback function.
         self._callbackFunction = callback_function
-
-    def set_callback(self, new_callback_function):
-        # Set the callback function to be called upon user hitting the enter key
-        self._callbackFunction = new_callback_function
 
     def handle_event(self, event):
         # Track only mouse presses and key presses
@@ -601,28 +630,23 @@ class TextBox(_BaseTextBox):
 
         self._update()
 
+    def _prop_get_callback_function(self):
+        return self._callbackFunction
     def _prop_set_callback_function(self, new_callback_function):
         self._callbackFunction = new_callback_function
         self._update()
-
-    def _prop_get_callback_function(self):
-        return self._callbackFunction
 
     callbackFunction = property(_prop_get_callback_function, _prop_set_callback_function)
 
 
 class CheckBox(_BaseCheckBox):
-    def __init__(self, engine, rect=None, z=0, background_color=WHITE, callback_function=None):
+    def __init__(self, rect=None, z=0, background_color=WHITE, callback_function=None):
 
         # Let base handle most of initialization.  Base class should call _update.
-        _BaseCheckBox.__init__(self, engine, rect, z, background_color)
+        _BaseCheckBox.__init__(self, rect, z, background_color)
 
         # Set function to be called when checked or unchecked
         self._callbackFunction = callback_function
-
-    def set_callback(self, new_callback_function):
-        # Set the callback function to be called upon checkbox changing checked state
-        self._callbackFunction = new_callback_function
 
     def handle_event(self, event):
         # Track only mouse presses and key presses
@@ -648,31 +672,26 @@ class CheckBox(_BaseCheckBox):
 
         self._update()
 
+    def _prop_get_callback_function(self):
+        return self._callbackFunction
     def _prop_set_callback_function(self, new_callback_function):
         self._callbackFunction = new_callback_function
         self._update()
-
-    def _prop_get_callback_function(self):
-        return self._callbackFunction
 
     callbackFunction = property(_prop_get_callback_function, _prop_set_callback_function)
 
 
 class Button(_BaseButton):
-    def __init__(self, engine, rect=None, z=0, text='',
+    def __init__(self, rect=None, z=0, text='',
                  background_color=LIGHTGRAY, foreground_color=BLACK, font=None,
                  callback_function=None):
 
         # Let base handle most of initialization.  Base class should call _update.
-        _BaseButton.__init__(self, engine, rect, z, text,
+        _BaseButton.__init__(self, rect, z, text,
                              background_color, foreground_color, font)
 
         # Set callback if provided
         self._callbackFunction = callback_function
-
-    def set_callback(self, new_callback_function):
-        # Set the callback function to be called upon checkbox changing checked state
-        self._callbackFunction = new_callback_function
 
     def handle_event(self, event):
         if event.type not in (pygame.MOUSEMOTION, pygame.MOUSEBUTTONUP, pygame.MOUSEBUTTONDOWN) or not self._visible:
@@ -713,12 +732,11 @@ class Button(_BaseButton):
 
         self._update()
 
+    def _prop_get_callback_function(self):
+        return self._callbackFunction
     def _prop_set_callback_function(self, new_callback_function):
         self._callbackFunction = new_callback_function
         self._update()
-
-    def _prop_get_callback_function(self):
-        return self._callbackFunction
 
     callbackFunction = property(_prop_get_callback_function, _prop_set_callback_function)
 
@@ -737,10 +755,10 @@ class Button(_BaseButton):
 
 
 class PyText(_BaseText):
-    def __init__(self, engine, rect=None, z=0, text='',
+    def __init__(self, rect=None, z=0, text='',
                  background_color=TRANSPARENT, text_color=BLACK, font=None):
         # Let base handle most of initialization.  Base class should call _update.
-        _BaseText.__init__(self, engine, rect, z, text,
+        _BaseText.__init__(self, rect, z, text,
                            background_color, text_color, font)
 
         self._mouseOverText = False
@@ -827,11 +845,11 @@ class PyText(_BaseText):
 
 
 class PyTextBox(_BaseTextBox):
-    def __init__(self, engine, rect=None, z=0, background_text=None, background_color=WHITE,
+    def __init__(self, rect=None, z=0, background_text=None, background_color=WHITE,
                  input_text_color=BLACK, background_text_color=LIGHTGRAY, font=None):
 
         # Let base handle most of initialization.  Base class should call _update.
-        _BaseTextBox.__init__(self, engine, rect, z, background_text, background_color,
+        _BaseTextBox.__init__(self, rect, z, background_text, background_color,
                               input_text_color, background_text_color, font)
 
         self._mouseOverTextBox = False
@@ -916,10 +934,10 @@ class PyTextBox(_BaseTextBox):
 
 
 class PyCheckBox(_BaseCheckBox):
-    def __init__(self, engine, rect=None, z=0, background_color=WHITE):
+    def __init__(self, rect=None, z=0, background_color=WHITE):
 
         # Let base handle most of initialization.  Base class should call _update.
-        _BaseCheckBox.__init__(self, engine, rect, z, background_color)
+        _BaseCheckBox.__init__(self, rect, z, background_color)
 
         # Variables to be used in handling events
         self._mouseOverCheckBox = False
@@ -1005,11 +1023,11 @@ class PyCheckBox(_BaseCheckBox):
 
 
 class PyButton(_BaseButton):
-    def __init__(self, engine, rect=None, z=0, text='',
+    def __init__(self, rect=None, z=0, text='',
                  background_color=LIGHTGRAY, foreground_color=BLACK, font=None):
 
         # Let base handle most of initialization.  Base class should call _update.
-        _BaseButton.__init__(self, engine, rect, z, text,
+        _BaseButton.__init__(self, rect, z, text,
                              background_color, foreground_color, font)
 
     def handle_event(self, event):

@@ -1,7 +1,10 @@
-import UI
+import CardEngine.UI
 import sys
 import pygame
 from pygame.locals import *
+
+__author__ = 'Evan'
+
 
 pygame.font.init()
 
@@ -28,14 +31,14 @@ def test():
     background.fill(background_color)
 
     # I would use arial, calibri, gentiumBookBasic, segoeUI, and timesNewRoman
-    text1 = UI.Text(rect=pygame.Rect(30, 30, 60, 30), text='1. Hello', font=arial)
+    text1 = CardEngine.UI.Text(rect=pygame.Rect(30, 30, 60, 30), text='1. Hello', font=arial)
     # text2 = UI.Text(rect = pygame.Rect(30,60,60,30), text = '2. Hello',font = arialBlack)
-    text3 = UI.Text(rect=pygame.Rect(30, 60, 60, 30), text='3. Hello', font=calibri)
+    text3 = CardEngine.UI.Text(rect=pygame.Rect(30, 60, 60, 30), text='3. Hello', font=calibri)
     # text4 = UI.Text(rect = pygame.Rect(30,120,60,30), text = '4. Hello',font = cambria)
     # text5 = UI.Text(rect = pygame.Rect(30,150,60,30), text = '5. Hello',font = courierNew)
-    text6 = UI.Text(rect=pygame.Rect(30, 90, 60, 30), text='6. Hello', font=gentiumBookBasic)
-    text7 = UI.Text(rect=pygame.Rect(30, 120, 60, 30), text='7. Hello', font=segoeUI)
-    text8 = UI.Text(rect=pygame.Rect(30, 150, 60, 30), text='8. Hello', font=timesNewRoman)
+    text6 = CardEngine.UI.Text(rect=pygame.Rect(30, 90, 60, 30), text='6. Hello', font=gentiumBookBasic)
+    text7 = CardEngine.UI.Text(rect=pygame.Rect(30, 120, 60, 30), text='7. Hello', font=segoeUI)
+    text8 = CardEngine.UI.Text(rect=pygame.Rect(30, 150, 60, 30), text='8. Hello', font=timesNewRoman)
     # text9 = UI.Text(rect = pygame.Rect(30,270,60,30), text = '9. Hello',font = verdana)
     # text10 = UI.Text(rect = pygame.Rect(30,180,60,30), text = '10. Hello',font = vrinda)
 
@@ -45,7 +48,6 @@ def test():
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
-                return
 
         screen.blit(background, (0, 0))
         text1.render(screen)
