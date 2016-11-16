@@ -1,4 +1,5 @@
 import pygame
+from CardEngine import Hitbox
 import CardEngine.Engine
 
 UI_FONT = None
@@ -72,6 +73,7 @@ class UIElement(object):
             self._rect = pygame.Rect((x, y), (w, h))
         else:
             self._rect = pygame.Rect(rect)
+
         self._z = z
         self._visible = True
 
@@ -166,6 +168,188 @@ class UIElement(object):
     visible = property(_prop_get_visible, _prop_set_visible)
 
 
+class CardUI(UIElement):
+    def __init__(self, card=None, front_surface=None, back_surface=None, rect=None, x=0, y=0, z=0,
+                 angle_degrees=0, callback_function=None):
+
+        UIElement.__init__(self, rect, z)
+
+        # Workaround for the time being.
+        # UI Elements are not expected to overlap, while cards are.
+        # Engine handles events with cards differently than other UI Elements as a result
+        CardEngine.Engine.CardEngine.remove_ui_element(self)
+        CardEngine.Engine.CardEngine.add_card_element(self)
+
+        # Suit and value to be returned on clicking card
+        self.card = card
+
+        # Set angle in radians.  Defaults to 0 radians
+        self._angle = angle_degrees
+
+        # Set rect if it doesnt exist
+        if rect is None:
+            self._rect = pygame.Rect(x, y, 60, 30)
+        else:
+            self._rect = rect
+            self._rect.topleft = (x, y)
+
+        # Setup front of card
+        if front_surface is None:
+            self._frontSurface = pygame.Surface(self._rect.size)
+        else:
+            self._frontSurface = front_surface.copy()
+
+        # Setup back of card
+        if back_surface is None:
+            self._backSurface = pygame.Surface(self._rect.size)
+        else:
+            self._backSurface = back_surface.copy()
+
+        # Create hitbox for the card
+        x = self._rect.x  # Syntactic sugar
+        y = self._rect.y  # Syntactic sugar
+        width = self._frontSurface.get_width()  # Syntactic sugar
+        height = self._frontSurface.get_height()  # Syntactic sugar
+
+        self._hitbox = Hitbox.SquareHitbox(x, y, width, height, self._angle)
+
+        # Setup sound to playback when requested
+        self._sound = None
+        self._start_time = 0
+
+        # Variables for keeping track of mouse events
+        self._lastMouseDownOverCard = False
+        self._mouseOverCard = False
+        self._cardDown = False
+        self._frontView = True
+
+        # Set callback function.
+        self._callbackFunction = callback_function
+
+    # Used to render an image to the screen.
+    def render(self, surface):
+        # As card may be rotated, the x and y positions do not correlate to the top left corner of the card.
+        dx = 0
+        dy = 0
+
+        x = self._hitbox.rotatedPoints[0].x
+        y = self._hitbox.rotatedPoints[0].y
+        # Point 0 is reference used for hitbox, so need to offset the display to match the hitbox
+        for point in self._hitbox.rotatedPoints:
+            if (point.x - x) < dx:
+                dx = point.x - x
+            if (point.y - y) < dy:
+                dy = point.y - y
+
+        # Display front or back of the card
+        if self._visible:
+            if self._frontView:
+                rotated_image = pygame.transform.rotate(self._frontSurface, self._angle)
+            else:
+                rotated_image = pygame.transform.rotate(self._backSurface, self._angle)
+
+            surface.blit(rotated_image, (self._rect.x + dx, self._rect.y + dy))
+
+    # Used to update the internal state of the UI Element.
+    def _update(self):
+        self._hitbox.update(x=self._rect.x, y=self._rect.y, angle=self._angle)
+        return
+
+    def collide(self, x, y):
+        return self._hitbox.collide(x, y)
+
+    def set_callback(self, new_callback_function):
+        # Set the callback function to be called upon user hitting the enter key
+        self._callbackFunction = new_callback_function
+
+    def handle_event(self, event):
+        if event.type not in (pygame.MOUSEMOTION, pygame.MOUSEBUTTONUP, pygame.MOUSEBUTTONDOWN) or not self._visible:
+            # The button only cares bout mouse-related events (or no events, if it is invisible)
+            return
+
+        x, y = event.pos
+
+        if not self._mouseOverCard and self._hitbox.collide(x, y):
+            # if mouse has entered the button:
+            self._mouseOverCard = True
+        elif self._mouseOverCard and not self._hitbox.collide(x, y):
+            # if mouse has exited the button:
+            self._mouseOverCard = False
+
+        if self._hitbox.collide(x, y):
+            # if mouse event happened over the button:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                self._cardDown = True
+                self._lastMouseDownOverCard = True
+        else:
+            if event.type in (pygame.MOUSEBUTTONUP, pygame.MOUSEBUTTONDOWN):
+                # if an up/down happens off the button, then the next up won't cause mouseClick()
+                self._lastMouseDownOverCard = False
+
+        # mouse up is handled whether or not it was over the button
+        do_mouse_click = False
+        if event.type == pygame.MOUSEBUTTONUP:
+            if self._lastMouseDownOverCard:
+                do_mouse_click = True
+                self._lastMouseDownOverCard = False
+
+            if self._cardDown:
+                self._cardDown = False
+
+            if do_mouse_click:
+                self._cardDown = False
+                if self._callbackFunction is not None:
+                    self._callbackFunction(self)
+
+        self._update()
+
+    def play_sound(self):
+        if self._sound is not None:
+            print pygame.time.get_ticks()
+            print self._start_time
+            print self._sound.get_length() * 1000
+            if (pygame.time.get_ticks() - self._start_time) > (self._sound.get_length() * 1000):
+                self._sound.play()
+                self._start_time = pygame.time.get_ticks()
+
+    def load_sound_file(self, file_path):
+        self._sound = pygame.mixer.Sound(file_path)
+        self._sound.set_volume(0.2)
+
+    def _prop_set_callback_function(self, new_callback_function):
+        self._callbackFunction = new_callback_function
+        self._update()
+    def _prop_get_callback_function(self):
+        return self._callbackFunction
+
+    def _prop_set_front_view(self, front_view):
+        self._frontView = front_view
+        self._update()
+    def _prop_get_front_view(self):
+        return self._frontView
+
+    def _prop_set_angle_radians(self, angle_radians):
+        self._angle = angle_radians * 180 / 3.1415926
+        self._update()
+    def _prop_get_angle_radians(self):
+        return self._angle * 3.1415926 / 180
+
+    def _prop_set_angle_degrees(self, angle_degrees):
+        self._angle = angle_degrees
+        self._update()
+    def _prop_get_angle_degrees(self):
+        return self._angle
+
+    def _prop_get_sound(self):
+        return self._sound
+    def _prop_set_sound(self, sound):
+        self._sound = sound
+
+    callbackFunction = property(_prop_get_callback_function, _prop_set_callback_function)
+    front_view = property(_prop_get_front_view, _prop_set_front_view)
+    angle_radians = property(_prop_get_angle_radians, _prop_set_angle_radians)
+    angle_degrees = property(_prop_get_angle_degrees, _prop_set_angle_degrees)
+    sound = property(_prop_get_sound, _prop_set_sound)
 # The following classes are used as a base for common UI Elements.  The first way to handle UI Elements is to
 # use a callback function, which will be triggered internally in reaction to pygame events.  The second way is to
 # use inheritance to override several methods in the UI Element class.  These methods are called in the handle_event
@@ -180,6 +364,7 @@ class UIElement(object):
 # TextBox (Input)
 # CheckBox (Input)
 # Button (Input)
+
 
 class _BaseText(UIElement):
     def __init__(self, rect=None, z=0, text='',
@@ -223,6 +408,9 @@ class _BaseText(UIElement):
         text_rect = text_surf.get_rect()
         text_rect.center = int(w / 2), int(h / 2)
         self._surfaceNormal.blit(text_surf, text_rect)
+
+    def handle_event(self, event):
+        return
 
     def _prop_get_text(self):
         return self._text

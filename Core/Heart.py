@@ -1,6 +1,7 @@
 import pygame
 
 from CardEngine import Engine
+import CardEngine.UI
 from Core.StateMachine import StateMachine
 from Core.StateMachine import State
 from Core.Player.AI import AI
@@ -62,6 +63,8 @@ class Hearts:
         # Initialize the pygame Engine
         Engine.CardEngine.init(width, height)
 
+        print pygame.mixer.get_num_channels()
+
         # Initialize clock to limit fps
         self.clock = pygame.time.Clock()
 
@@ -118,15 +121,24 @@ class Hearts:
     def setup_ui(self):
         one_x = 212
         one_y = 645
+        one_z = 0
 
         two_x = 150
         two_y = 200
+        two_z = 0
 
         three_x = 588
         three_y = 150
+        three_z = 0
 
         four_x = 650
         four_y = 575
+        four_z = 0
+
+        self.player_one.sort_hand()
+        self.player_two.sort_hand()
+        self.player_three.sort_hand()
+        self.player_four.sort_hand()
 
         for card_ui in self.card_ui_elements:
             card = card_ui.card
@@ -137,7 +149,9 @@ class Hearts:
                 card_ui.visible = True
                 card_ui.front_view = True
                 card_ui.card.owner = self.player_one
+                card_ui.z = one_z
                 one_x += 25
+                one_z += .1
 
             elif card in self.player_two.hand:
                 card_ui.angle_degrees = 270
@@ -145,7 +159,9 @@ class Hearts:
                 card_ui.visible = True
                 card_ui.front_view = False
                 card_ui.card.owner = self.player_two
+                card_ui.z = two_z
                 two_y += 25
+                two_z += .1
 
             elif card in self.player_three.hand:
                 card_ui.angle_degrees = 180
@@ -153,7 +169,9 @@ class Hearts:
                 card_ui.visible = True
                 card_ui.front_view = False
                 card_ui.card.owner = self.player_three
+                card_ui.z = three_z
                 three_x -= 25
+                three_z += .1
 
             elif card in self.player_four.hand:
                 card_ui.angle_degrees = 90
@@ -161,10 +179,12 @@ class Hearts:
                 card_ui.visible = True
                 card_ui.front_view = False
                 card_ui.card.owner = self.player_four
+                card_ui.z = four_z
                 four_y -= 25
+                four_z += .1
 
             if card.value is Constant.Value.Ace and card.suit is Constant.Suit.Spades:
-                card_ui.load_sound_file("Sound/The Ace of Spades.wav")
+                card_ui.load_sound_file("Res/Sound/The Ace of Spades.wav")
 
         return
 
@@ -176,8 +196,8 @@ class Hearts:
 
             front_sprite = self.front_sprites[front_sprite_name]
             back_sprite = self.back_sprites[back_sprite_name]
-            card_ui = Engine.CardUI(Engine.CardEngine, card, front_sprite, back_sprite, x=0, y=0, z=z,
-                                  callback_function=self.stateMachine.handle_card_click, angle_degrees=0)
+            card_ui = CardEngine.UI.CardUI(card, front_sprite, back_sprite, x=0, y=0, z=z,
+                                           callback_function=self.stateMachine.handle_card_click, angle_degrees=0)
 
             card_ui.visible = False
             self.card_ui_elements.append(card_ui)

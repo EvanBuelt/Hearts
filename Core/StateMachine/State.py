@@ -711,7 +711,7 @@ class ScoringState(State):
         self.player_three_total_points = 0
         self.player_four_total_points = 0
 
-        self.button = UI.Button(Cards.CardEngine, rect=pygame.Rect((340, 400), (120, 30)))
+        self.button = UI.Button(rect=pygame.Rect((340, 400), (120, 30)))
         self.button.callbackFunction = self.handle_button_press
         self.button.visible = False
         self.button.text = "Start next round"
@@ -723,19 +723,19 @@ class ScoringState(State):
         p3_loc = (400, y)
         p4_loc = (460, y)
 
-        player_one_point_text = UI.Text(Cards.CardEngine, rect=pygame.Rect(p1_loc, size))
+        player_one_point_text = UI.Text(rect=pygame.Rect(p1_loc, size))
         player_one_point_text.text = str(self.player_one_points[0])
         player_one_point_text.visible = False
 
-        player_two_point_text = UI.Text(Cards.CardEngine, rect=pygame.Rect(p2_loc, size))
+        player_two_point_text = UI.Text(rect=pygame.Rect(p2_loc, size))
         player_two_point_text.text = str(self.player_two_points[0])
         player_two_point_text.visible = False
 
-        player_three_point_text = UI.Text(Cards.CardEngine, rect=pygame.Rect(p3_loc, size))
+        player_three_point_text = UI.Text(rect=pygame.Rect(p3_loc, size))
         player_three_point_text.text = str(self.player_three_points[0])
         player_three_point_text.visible = False
 
-        player_four_point_text = UI.Text(Cards.CardEngine, rect=pygame.Rect(p4_loc, size))
+        player_four_point_text = UI.Text(rect=pygame.Rect(p4_loc, size))
         player_four_point_text.text = str(self.player_four_points[0])
         player_four_point_text.visible = False
 
@@ -788,22 +788,22 @@ class ScoringState(State):
         p3_loc = (400, y)
         p4_loc = (460, y)
 
-        player_one_point_text = UI.Text(Cards.CardEngine, rect=pygame.Rect(p1_loc, size))
+        player_one_point_text = UI.Text(rect=pygame.Rect(p1_loc, size))
         player_one_point_text.visible = False
         player_one_point_text.text = str(self.player_one_total_points)
         self.player_one_point_text_list.append(player_one_point_text)
 
-        player_two_point_text = UI.Text(Cards.CardEngine, rect=pygame.Rect(p2_loc, size))
+        player_two_point_text = UI.Text(rect=pygame.Rect(p2_loc, size))
         player_two_point_text.visible = False
         player_two_point_text.text = str(self.player_two_total_points)
         self.player_two_point_text_list.append(player_two_point_text)
 
-        player_three_point_text = UI.Text(Cards.CardEngine, rect=pygame.Rect(p3_loc, size))
+        player_three_point_text = UI.Text(rect=pygame.Rect(p3_loc, size))
         player_three_point_text.visible = False
         player_three_point_text.text = str(self.player_three_total_points)
         self.player_three_point_text_list.append(player_three_point_text)
 
-        player_four_point_text = UI.Text(Cards.CardEngine, rect=pygame.Rect(p4_loc, size))
+        player_four_point_text = UI.Text(rect=pygame.Rect(p4_loc, size))
         player_four_point_text.visible = False
         player_four_point_text.text = str(self.player_four_total_points)
         self.player_four_point_text_list.append(player_four_point_text)

@@ -1,11 +1,20 @@
 To Do List for the game:
+-Update UI Elements to use a hitbox that only covers a partial portion of the UI Element
+    -This will allow better handling of events.  Several events look to see if they happened within the hitbox,
+    but several UI Elements may overlap.
 -Refactor states to make names make more sense
 -Look into using decision tree for playing the game
 -Update Hearts class to have a list of playable cards (makes decision making easier)
--Add way to display score in between rounds
 -Add start menu
--Settings menu
+
+-Settings menu (Audio, Video)
+    -Adjusting volume
+    -Adjusting screen size
+    -Fullscreen vs windowed
+
 -Add more comments
+    -Docstrings (""" """)
+
 -Add UI Elements
     -Nickname for each player
     -Press Start button on start menu
@@ -44,6 +53,7 @@ To Do List for the game:
 
 -Update positioning the UI elements to use top, topleft, topright, etc.
     -Update UI init to use above functionality
+    -This will allow for easily moving rotated objects.
 
 -Dynamically loading a game
     -Seems like it could be incredibly tough to load code for game dynamically.
