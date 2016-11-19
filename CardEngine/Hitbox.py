@@ -1,6 +1,168 @@
 import math
 
 
+class Point2D:
+    """
+    This class represents a 2D point in space.  Uses several methods to translate, rotate, scale, and reflect the point in space
+    """
+    def __init__(self, x, y):
+        """
+        Initializes the point class with x and y coordinates as floating poing values
+        :param x: A value representing the x coordinate
+        :param y: A value representing the y coordinate
+        :return:
+        """
+        self.x = float(x)
+        self.y = float(y)
+
+    def copy(self):
+        """
+        Returns a new Point class with the same x and y coordinates
+        :return Point: new Point class
+        """
+        return Point2D(self.x, self.y)
+
+    def translate(self, dx, dy):
+        """
+        Moves the point (dx, dy).
+        :param dx: Moves the point dx units in the x direction
+        :param dy: Moves the point dy units in the y direction
+        :return new_location: The new location of the point
+        """
+        self.x += dx
+        self.y += dy
+
+        new_location = (self.x, self.y)
+        return new_location
+
+    def rotate_clockwise(self, x, y, angle_radians):
+        """
+        Rotates the point about another point (x, y) clockwise by a given angle in radians.
+        This assumes a left-handed coordinate system, in which the y-axis is positive downwards and positive upwards.
+
+        :param x: X coordinate about which to rotate the point
+        :param y: Y coordinate about which to rotate the point
+        :param angle_radians: Angle to rotate the point, defined in radians
+        :return: Returns None
+        """
+
+        nx = math.cos(angle_radians) * (self.x - x) - math.sin(angle_radians) * (self.y - y) + x
+        ny = math.sin(angle_radians) * (self.x - x) + math.cos(angle_radians) * (self.y - y) + y
+
+        self.x = nx
+        self.y = ny
+
+    def rotate_counterclockwise(self, x, y, angle_radians):
+        # Rotate about the point (x, y) counter clockwise by a given angle in radians
+        self.rotate_clockwise(x, y, -1 * angle_radians)
+
+    def scale(self, x, y, scalar):
+        # Scales about the point (x, y) by a constant scalar
+        self.x = math.fabs(self.x - x) * scalar + x
+        self.y = math.fabs(self.y - y) * scalar + y
+
+    def reflect(self, axis):
+        if axis is 'x' or axis is 'X':
+            self.x *= -1
+        elif axis is 'y' or axis is 'Y':
+            self.y *= -1
+
+    def __eq__(self, *args):
+        if len(args) is 1:
+            other = args[0]
+            if isinstance(other, type(self)):
+                return (self.x == other.x) and (self.y == other.y)
+            elif isinstance(other, type((1, 0))) or isinstance(other, type((1., 2.))):
+                return (self.x == other[0]) and (self.y == other[1])
+
+        raise ValueError('Invalid Values For Comparison')
+
+    def __ne__(self, *args):
+        if len(args) is 1:
+            other = args[0]
+            if isinstance(other, type(self)):
+                return (self.x != other.x) or (self.y != other.y)
+            elif isinstance(other, type((1, 0))) or isinstance(other, type((1., 2.))):
+                return (self.x != other[0]) or (self.y != other[1])
+
+        raise ValueError('Invalid Values For Comparison')
+
+
+class Vector2D:
+    def __init__(self, x, y):
+        self.x = float(x)
+        self.y = float(y)
+
+    def magnitude(self):
+        return math.sqrt(pow(self.x, 2) + pow(self.y, 2))
+
+    def length(self):
+        return self.magnitude()
+
+    def normalize(self):
+        return Vector2D(self.x/self.length(), self.y/self.length())
+
+    def scale(self, scalar):
+        self.x *= scalar
+        self.y *= scalar
+
+    def dot(self, other):
+        return self.x*other.x + self.y*other.y
+
+    def get_angle_between_vectors(self, other):
+        return math.acos(self.dot(other) / (self.magnitude() * other.magnitude()))
+
+    def get_radians(self):
+        result = math.atan2(self.y, self.x)
+        if result < 0:
+            result += 2 * math.pi
+        return result
+
+    def get_degrees(self):
+        return math.degrees(self.get_radians())
+
+    def __iadd__(self, other):
+        self.x += other.x
+        self.y += other.y
+        return self
+
+    def __isub__(self, other):
+        self.x -= other.x
+        self.y -= other.y
+        return self
+
+    def __imul__(self, num):
+        self.x *= num
+        self.y *= num
+
+    def __idiv__(self, num):
+        self.x /= num
+        self.y /= num
+
+    def __mul__(self, other):
+        return self.x*other.x + self.y*other.y
+
+    def __eq__(self, *args):
+        if len(args) is 1:
+            other = args[0]
+            if isinstance(other, type(self)):
+                return (self.x == other.x) and (self.y == other.y)
+            elif isinstance(other, type((1, 0))) or isinstance(other, type((1., 2.))):
+                return (self.x == other[0]) and (self.y == other[1])
+
+        raise ValueError('Invalid Values For Comparison')
+
+    def __ne__(self, *args):
+        if len(args) is 1:
+            other = args[0]
+            if isinstance(other, type(self)):
+                return (self.x != other.x) or (self.y != other.y)
+            elif isinstance(other, type((1, 0))) or isinstance(other, type((1., 2.))):
+                return (self.x != other[0]) or (self.y != other[1])
+
+        raise ValueError('Invalid Values For Comparison')
+
+
 class Triangle(object):
     def __init__(self, point_a, point_b, point_c):
         self._points = [point_a, point_b, point_c]
@@ -28,9 +190,9 @@ class Triangle(object):
         point_c = self._points[2]
 
         # Compute vectors
-        v0 = Vector(point_c.x - point_a.x, point_c.y - point_a.y)
-        v1 = Vector(point_b.x - point_a.x, point_b.y - point_b.y)
-        v2 = Vector(x - point_a.x, y - point_b.y)
+        v0 = Vector2D(point_c.x - point_a.x, point_c.y - point_a.y)
+        v1 = Vector2D(point_b.x - point_a.x, point_b.y - point_b.y)
+        v2 = Vector2D(x - point_a.x, y - point_b.y)
 
         # Compute dot products
         dot00 = v0 * v0
@@ -81,17 +243,53 @@ class Triangle(object):
     pointc = property(_prop_getpointc, _prop_setpointc)
 
 
-class Hitbox(object):
+class Hitbox2D(object):
     def __init__(self, points=None):
+        # If no points were passed in, then initialize an empty array.  Otherwise,
         if points is None:
-            self.points = []
+            self.original_points = []
         else:
-            self.points = points
-        self.points = []
+            self.original_points = [point for point in points]
+
+        # Points used to create triangles.  Need copy of original points as overlapping hitboxes
+        # will add or remove points.
+        self.hitbox_points = [point for point in self.original_points]
+
+        # Triangles will be created to detect a mouse collision
+        self.triangles = []
+
+    def _update_points(self):
+        return
+
+    def collidepoint(self, x, y):
+        return
+
+    def colliderect(self, rect):
+        return
+
+    def collidehitbox(self, hitbox):
+        return
+
+    def _prop_get_x(self):
+        return self._x
+    def _prop_set_x(self, x):
+        self._x = x
+        self._update_points()
+
+    def _prop_get_y(self):
+        return self._y
+    def _prop_set_y(self, y):
+        self._y = y
+        self._update_points()
+
+    x = property(_prop_get_x, _prop_set_x)
+    y = property(_prop_get_y, _prop_set_y)
 
 
-class SquareHitbox(object):
+class SquareHitbox2D(Hitbox2D):
     def __init__(self, x, y, width, height, angle):
+        Hitbox2D.__init__(self, [Point2D(x, y), Point2D(x + width, y), Point2D(x + width, y + height),
+                                 Point2D(x, y + height)])
         self._x = x
         self._y = y
         self._width = width
@@ -108,12 +306,12 @@ class SquareHitbox(object):
         # Assuming points a, b, c, and d, and a point m with coordinates (x, y).
         # Check the vector from point a to point m against the vectors from a to b and a to d.
         # Vector math to check if a point is inside the hitbox.  Allows hitbox to be rotated to any angle
-        vector_am = Vector(self.rotatedPoints[0].x - x,
-                           self.rotatedPoints[0].y - y)
-        vector_ab = Vector(self.rotatedPoints[0].x - self.rotatedPoints[1].x,
-                           self.rotatedPoints[0].y - self.rotatedPoints[1].y)
-        vector_ad = Vector(self.rotatedPoints[0].x - self.rotatedPoints[3].x,
-                           self.rotatedPoints[0].y - self.rotatedPoints[3].y)
+        vector_am = Vector2D(self.rotatedPoints[0].x - x,
+                             self.rotatedPoints[0].y - y)
+        vector_ab = Vector2D(self.rotatedPoints[0].x - self.rotatedPoints[1].x,
+                             self.rotatedPoints[0].y - self.rotatedPoints[1].y)
+        vector_ad = Vector2D(self.rotatedPoints[0].x - self.rotatedPoints[3].x,
+                             self.rotatedPoints[0].y - self.rotatedPoints[3].y)
         if 0 <= vector_am * vector_ab < vector_ab * vector_ab and 0 <= vector_am * vector_ad < vector_ad * vector_ad:
             return True
         else:
@@ -139,10 +337,10 @@ class SquareHitbox(object):
 
     def _get_points(self):
         self.points = []
-        self.points.append(Point(self.x, self.y))
-        self.points.append(Point(self.x + self.width, self.y))
-        self.points.append(Point(self.x + self.width, self.y + self.height))
-        self.points.append(Point(self.x, self.y + self.height))
+        self.points.append(Point2D(self.x, self.y))
+        self.points.append(Point2D(self.x + self.width, self.y))
+        self.points.append(Point2D(self.x + self.width, self.y + self.height))
+        self.points.append(Point2D(self.x, self.y + self.height))
 
     def _get_rotated_points(self):
         # Use Point 0 as reference for rotating every point
@@ -154,18 +352,6 @@ class SquareHitbox(object):
 
         for point in self.rotatedPoints:
             point.rotate_counterclockwise(x, y, self._angle)
-
-    def _prop_get_x(self):
-        return self._x
-    def _prop_set_x(self, x):
-        self._x = x
-        self.update()
-
-    def _prop_get_y(self):
-        return self._y
-    def _prop_set_y(self, y):
-        self._y = y
-        self.update()
 
     def _prop_get_topleft(self):
         return
@@ -285,9 +471,6 @@ class SquareHitbox(object):
         self._angle = math.radians(degrees)
         self.update()
 
-    x = property(_prop_get_x, _prop_set_x)
-    y = property(_prop_get_y, _prop_set_y)
-
     topleft = property(_prop_get_topleft, _prop_set_topleft)
     topright = property(_prop_get_topright, _prop_set_topright)
     bottomleft = property(_prop_get_bottomleft, _prop_set_bottomleft)
@@ -309,134 +492,3 @@ class SquareHitbox(object):
     w = property(_prop_get_w, _prop_set_w)
     h = property(_prop_get_h, _prop_set_h)
 
-
-class Point:
-    def __init__(self, x, y):
-        self.x = float(x)
-        self.y = float(y)
-
-    def copy(self):
-        return Point(self.x, self.y)
-
-    def translate(self, dx, dy):
-        self.x += dx
-        self.y += dy
-
-    def rotate_clockwise(self, x, y, angle_radians):
-        # Rotate about the point (x, y) clockwise by a given angle in radians
-
-        nx = math.cos(angle_radians) * (self.x - x) - math.sin(angle_radians) * (self.y - y) + x
-        ny = math.sin(angle_radians) * (self.x - x) + math.cos(angle_radians) * (self.y - y) + y
-
-        self.x = nx
-        self.y = ny
-
-    def rotate_counterclockwise(self, x, y, angle_radians):
-        # Rotate about the point (x, y) counter clockwise by a given angle in radians
-        self.rotate_clockwise(x, y, -1 * angle_radians)
-
-    def scale(self, x, y, scalar):
-        # Scales about the point (x, y) by a constant scalar
-        self.x = math.fabs(self.x - x) * scalar + x
-        self.y = math.fabs(self.y - y) * scalar + y
-
-    def reflect(self, axis):
-        if axis is 'x' or axis is 'X':
-            self.x *= -1
-        elif axis is 'y' or axis is 'Y':
-            self.y *= -1
-
-    def __eq__(self, *args):
-        if len(args) is 1:
-            other = args[0]
-            if isinstance(other, type(self)):
-                return (self.x == other.x) and (self.y == other.y)
-            elif isinstance(other, type((1, 0))) or isinstance(other, type((1., 2.))):
-                return (self.x == other[0]) and (self.y == other[1])
-
-        raise ValueError('Invalid Values For Comparison')
-
-    def __ne__(self, *args):
-        if len(args) is 1:
-            other = args[0]
-            if isinstance(other, type(self)):
-                return (self.x != other.x) or (self.y != other.y)
-            elif isinstance(other, type((1, 0))) or isinstance(other, type((1., 2.))):
-                return (self.x != other[0]) or (self.y != other[1])
-
-        raise ValueError('Invalid Values For Comparison')
-
-
-class Vector:
-    def __init__(self, x, y):
-        self.x = float(x)
-        self.y = float(y)
-
-    def magnitude(self):
-        return math.sqrt(pow(self.x, 2) + pow(self.y, 2))
-
-    def length(self):
-        return self.magnitude()
-
-    def normalize(self):
-        return Vector(self.x/self.length(), self.y/self.length())
-
-    def scale(self, scalar):
-        self.x *= scalar
-        self.y *= scalar
-
-    def dot(self, other):
-        return self.x*other.x + self.y*other.y
-
-    def get_angle_between_vectors(self, other):
-        return math.acos(self.dot(other) / (self.magnitude() * other.magnitude()))
-
-    def get_radians(self):
-        result = math.atan2(self.y, self.x)
-        if result < 0:
-            result += 2 * math.pi
-        return result
-
-    def get_degrees(self):
-        return math.degrees(self.get_radians())
-
-    def __iadd__(self, other):
-        self.x += other.x
-        self.y += other.y
-        return self
-
-    def __isub__(self, other):
-        self.x -= other.x
-        self.y -= other.y
-        return self
-
-    def __imul__(self, num):
-        self.x *= num
-        self.y *= num
-
-    def __idiv__(self, num):
-        self.x /= num
-        self.y /= num
-
-    def __mul__(self, other):
-        return self.x*other.x + self.y*other.y
-
-    def __eq__(self, *args):
-        if len(args) is 1:
-            other = args[0]
-            if isinstance(other, type(self)):
-                return (self.x == other.x) and (self.y == other.y)
-            elif isinstance(other, type((1, 0))) or isinstance(other, type((1., 2.))):
-                return (self.x == other[0]) and (self.y == other[1])
-
-        raise ValueError('Invalid Values For Comparison')
-
-    def __ne__(self, *args):
-        if len(args) is 1:
-            other = args[0]
-            if isinstance(other, type(self)):
-                return (self.x != other.x) or (self.y != other.y)
-            elif isinstance(other, type((1, 0))) or isinstance(other, type((1., 2.))):
-                return (self.x != other[0]) or (self.y != other[1])
-
-        raise ValueError('Invalid Values For Comparison')

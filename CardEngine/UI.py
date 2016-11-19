@@ -211,7 +211,7 @@ class CardUI(UIElement):
         width = self._frontSurface.get_width()  # Syntactic sugar
         height = self._frontSurface.get_height()  # Syntactic sugar
 
-        self._hitbox = Hitbox.SquareHitbox(x, y, width, height, self._angle)
+        self._hitbox = Hitbox.SquareHitbox2D(x, y, width, height, self._angle)
 
         # Setup sound to playback when requested
         self._sound = None

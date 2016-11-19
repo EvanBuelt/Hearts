@@ -9,10 +9,11 @@ import unittest
 __author__ = 'Evan'
 
 
+# Tests to verify the Point class
 class PointTests(unittest.TestCase):
     def test_point(self):
         # Create point at (4, 5)
-        p = CardEngine.Hitbox.Point(4, 5)
+        p = CardEngine.Hitbox.Point2D(4, 5)
 
         # Verify point was created at (4, 5)
         self.assertEqual(p.x, 4)
@@ -28,7 +29,7 @@ class PointTests(unittest.TestCase):
 
     def test_copy(self):
         # Create point at (2, 3) and copy of that point
-        p = CardEngine.Hitbox.Point(2, 3)
+        p = CardEngine.Hitbox.Point2D(2, 3)
         q = p.copy()
 
         # Verify points are in the same location
@@ -45,7 +46,7 @@ class PointTests(unittest.TestCase):
 
     def test_translate(self):
         # Create point at (3, 3)
-        p = CardEngine.Hitbox.Point(3, 3)
+        p = CardEngine.Hitbox.Point2D(3, 3)
 
         # Move point in positive direction to (5 ,6)
         p.translate(2, 3)
@@ -63,7 +64,7 @@ class PointTests(unittest.TestCase):
 
     def test_rotate_clockwise(self):
         # Create point at (3, 3)
-        p = CardEngine.Hitbox.Point(3, 3)
+        p = CardEngine.Hitbox.Point2D(3, 3)
 
         # Rotate point about (0, 0) 90 degrees to (y, -x) = (3, -3) and verify
         p.rotate_clockwise(0, 0, 1.570796327)
@@ -87,7 +88,7 @@ class PointTests(unittest.TestCase):
 
     def test_rotate_counterclockwise(self):
         # Create point at (3, 3)
-        p = CardEngine.Hitbox.Point(3, 3)
+        p = CardEngine.Hitbox.Point2D(3, 3)
 
         # Rotate point about (0, 0) 90 degrees to (-y, x) = (-3, 3) and verify
         p.rotate_counterclockwise(0, 0, 1.5707963268)
@@ -111,7 +112,7 @@ class PointTests(unittest.TestCase):
 
     def test_scale(self):
         # Create point at (3, 3)
-        p = CardEngine.Hitbox.Point(3, 3)
+        p = CardEngine.Hitbox.Point2D(3, 3)
 
         # Scale point to twice as big as before
         p.scale(0, 0, 2)
@@ -125,7 +126,7 @@ class PointTests(unittest.TestCase):
 
     def test_reflect(self):
         # Create point at (3, 3)
-        p = CardEngine.Hitbox.Point(3, 3)
+        p = CardEngine.Hitbox.Point2D(3, 3)
         self.addTypeEqualityFunc(type(p), p.__eq__)
 
         # Reflect point about x-axis
@@ -145,10 +146,11 @@ class PointTests(unittest.TestCase):
         self.assertEqual(p, (3, 3))
 
 
+# Tests to verify the Vector class
 class VectorTests(unittest.TestCase):
 
     def test_Vector(self):
-        v1 = CardEngine.Hitbox.Vector(2, 4)
+        v1 = CardEngine.Hitbox.Vector2D(2, 4)
 
         self.assertAlmostEqual(v1.x, 2, 5)
         self.assertAlmostEqual(v1.y, 4, 5)
@@ -156,11 +158,11 @@ class VectorTests(unittest.TestCase):
         return
 
     def test_magnitude(self):
-        v1 = CardEngine.Hitbox.Vector(3, 4)
-        v2 = CardEngine.Hitbox.Vector(2, 2)
-        v3 = CardEngine.Hitbox.Vector(-3, 2)
-        v4 = CardEngine.Hitbox.Vector(-4, -5)
-        v5 = CardEngine.Hitbox.Vector(2, -4)
+        v1 = CardEngine.Hitbox.Vector2D(3, 4)
+        v2 = CardEngine.Hitbox.Vector2D(2, 2)
+        v3 = CardEngine.Hitbox.Vector2D(-3, 2)
+        v4 = CardEngine.Hitbox.Vector2D(-4, -5)
+        v5 = CardEngine.Hitbox.Vector2D(2, -4)
 
         # Verify both magnitude and length methods for first vector
         self.assertAlmostEqual(v1.magnitude(), 5, 5)
@@ -184,7 +186,7 @@ class VectorTests(unittest.TestCase):
         return
 
     def test_normalize(self):
-        v1 = CardEngine.Hitbox.Vector(2, 2)
+        v1 = CardEngine.Hitbox.Vector2D(2, 2)
         v2 = v1.normalize()
 
         self.assertAlmostEqual(v1.x, 2, 7)
@@ -194,11 +196,11 @@ class VectorTests(unittest.TestCase):
         self.assertAlmostEqual(v2.y, .7071068, 5)
 
     def test_angles(self):
-        v1 = CardEngine.Hitbox.Vector(2, 2)
-        v2 = CardEngine.Hitbox.Vector(1, 5)
-        v3 = CardEngine.Hitbox.Vector(-3, -2)
-        v4 = CardEngine.Hitbox.Vector(-4, 0)
-        v5 = CardEngine.Hitbox.Vector(3, -9)
+        v1 = CardEngine.Hitbox.Vector2D(2, 2)
+        v2 = CardEngine.Hitbox.Vector2D(1, 5)
+        v3 = CardEngine.Hitbox.Vector2D(-3, -2)
+        v4 = CardEngine.Hitbox.Vector2D(-4, 0)
+        v5 = CardEngine.Hitbox.Vector2D(3, -9)
 
         # Verify angle for vector 1
         self.assertAlmostEqual(v1.get_degrees(), 45, 5)
@@ -223,9 +225,9 @@ class VectorTests(unittest.TestCase):
 
     def test_add_vectors(self):
 
-        v1 = CardEngine.Hitbox.Vector(2, 3)
-        v2 = CardEngine.Hitbox.Vector(-4, -3)
-        v3 = CardEngine.Hitbox.Vector(3, -2)
+        v1 = CardEngine.Hitbox.Vector2D(2, 3)
+        v2 = CardEngine.Hitbox.Vector2D(-4, -3)
+        v3 = CardEngine.Hitbox.Vector2D(3, -2)
 
         # Add vector 2 to vector 1
         v1 += v2
@@ -264,9 +266,9 @@ class VectorTests(unittest.TestCase):
         self.assertAlmostEqual(v3.y, -5, 5)
 
     def test_subtract_vectors(self):
-        v1 = CardEngine.Hitbox.Vector(2, 3)
-        v2 = CardEngine.Hitbox.Vector(-4, -3)
-        v3 = CardEngine.Hitbox.Vector(3, -2)
+        v1 = CardEngine.Hitbox.Vector2D(2, 3)
+        v2 = CardEngine.Hitbox.Vector2D(-4, -3)
+        v3 = CardEngine.Hitbox.Vector2D(3, -2)
 
         # Subtract vector 2 from vector 1
         v1 -= v2
@@ -317,12 +319,13 @@ class VectorTests(unittest.TestCase):
         return
 
 
+# Tests to verify the Triangle class.
 class TriangleTests(unittest.TestCase):
     def test_Triangle(self):
         # Initialize triangle to test initial setup
-        triangle = CardEngine.Hitbox.Triangle(CardEngine.Hitbox.Point(0, 0),
-                                            CardEngine.Hitbox.Point(3, 0),
-                                            CardEngine.Hitbox.Point(0, 4))
+        triangle = CardEngine.Hitbox.Triangle(CardEngine.Hitbox.Point2D(0, 0),
+                                              CardEngine.Hitbox.Point2D(3, 0),
+                                              CardEngine.Hitbox.Point2D(0, 4))
 
         # Syntactic sugar
         point_a = triangle._points[0]
@@ -340,17 +343,17 @@ class TriangleTests(unittest.TestCase):
 
     def test_CollidePoint(self):
         # Initialize triangle to test collide point works with both points and tupples
-        triangle = CardEngine.Hitbox.Triangle(CardEngine.Hitbox.Point(0, 0),
-                                            CardEngine.Hitbox.Point(4, 0),
-                                            CardEngine.Hitbox.Point(0, 4))
+        triangle = CardEngine.Hitbox.Triangle(CardEngine.Hitbox.Point2D(0, 0),
+                                              CardEngine.Hitbox.Point2D(4, 0),
+                                              CardEngine.Hitbox.Point2D(0, 4))
 
         # Initialize points for test
-        point_inside_triangle_1 = CardEngine.Hitbox.Point(1.8, 1.8)
-        point_inside_triangle_2 = CardEngine.Hitbox.Point(0.1, 3.8)
-        point_inside_triangle_3 = CardEngine.Hitbox.Point(3.8, 0.1)
-        point_outside_triangle_1 = CardEngine.Hitbox.Point(-0.5, 2)
-        point_outside_triangle_2 = CardEngine.Hitbox.Point(2, -0.5)
-        point_outside_triangle_3 = CardEngine.Hitbox.Point(2.1, 2.1)
+        point_inside_triangle_1 = CardEngine.Hitbox.Point2D(1.8, 1.8)
+        point_inside_triangle_2 = CardEngine.Hitbox.Point2D(0.1, 3.8)
+        point_inside_triangle_3 = CardEngine.Hitbox.Point2D(3.8, 0.1)
+        point_outside_triangle_1 = CardEngine.Hitbox.Point2D(-0.5, 2)
+        point_outside_triangle_2 = CardEngine.Hitbox.Point2D(2, -0.5)
+        point_outside_triangle_3 = CardEngine.Hitbox.Point2D(2.1, 2.1)
 
         # Verify that a given point is inside the triangle
         self.assertTrue(triangle.collidepoint(point_inside_triangle_1))
@@ -370,18 +373,18 @@ class TriangleTests(unittest.TestCase):
 
     def test_CollideTriangle(self):
         # Initialize triangles
-        triangle_1 = CardEngine.Hitbox.Triangle(CardEngine.Hitbox.Point(1, 1),
-                                                CardEngine.Hitbox.Point(4, 0),
-                                                CardEngine.Hitbox.Point(0, 4))
+        triangle_1 = CardEngine.Hitbox.Triangle(CardEngine.Hitbox.Point2D(1, 1),
+                                                CardEngine.Hitbox.Point2D(4, 0),
+                                                CardEngine.Hitbox.Point2D(0, 4))
         # Triangle 2 encompasses Triangle 1
-        triangle_2 = CardEngine.Hitbox.Triangle(CardEngine.Hitbox.Point(-1, -1),
-                                                CardEngine.Hitbox.Point(5, 0),
-                                                CardEngine.Hitbox.Point(0, 5))
+        triangle_2 = CardEngine.Hitbox.Triangle(CardEngine.Hitbox.Point2D(-1, -1),
+                                                CardEngine.Hitbox.Point2D(5, 0),
+                                                CardEngine.Hitbox.Point2D(0, 5))
 
         # Triangle 3 partially within Triangle 2, but does not collide with Triangle 1
-        triangle_3 = CardEngine.Hitbox.Triangle(CardEngine.Hitbox.Point(-1, -2),
-                                                CardEngine.Hitbox.Point(0, 0),
-                                                CardEngine.Hitbox.Point(0, -3))
+        triangle_3 = CardEngine.Hitbox.Triangle(CardEngine.Hitbox.Point2D(-1, -2),
+                                                CardEngine.Hitbox.Point2D(0, 0),
+                                                CardEngine.Hitbox.Point2D(0, -3))
 
         # Verify Triangle 1 and 2 intersect
         self.assertTrue(triangle_1.collidetriangle(triangle_2))
@@ -396,8 +399,17 @@ class TriangleTests(unittest.TestCase):
         self.assertTrue(triangle_3.collidetriangle(triangle_2))
         return
 
+    def test_Properties(self):
+        pointa = CardEngine.Hitbox.Point2D(4, 5)
+        pointb = CardEngine.Hitbox.Point2D(4, 0)
+        pointc = CardEngine.Hitbox.Point2D(0, 0)
 
-class SquareHitbox(unittest.TestCase):
+        triangle = CardEngine.Hitbox.Triangle(pointa, pointb, pointc)
+
+        return
+
+
+class HitboxTests(unittest.TestCase):
 
     def test_Hitbox(self):
         return
@@ -420,6 +432,11 @@ class SquareHitbox(unittest.TestCase):
     def test_subtract(self):
         return
 
+
+class SquareHitbox(unittest.TestCase):
+
+    def test_SquareHitbox(self):
+        return
 
 if __name__ == '__main__':
     unittest.main()
