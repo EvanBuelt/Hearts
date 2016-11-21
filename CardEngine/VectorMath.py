@@ -296,12 +296,26 @@ class Vector2D:
 
 
 class Triangle2D(object):
+    """
+    A class to represent a collision within three points.
+    """
     def __init__(self, point_a, point_b, point_c):
+        """
+        Takes in three points of class Point2D to use as corners of a 2D triangle.  First point is reference point
+        :param point_a: First point
+        :param point_b: Second point
+        :param point_c: Third point
+        :return:
+        """
         self._points = [point_a, point_b, point_c]
 
     def copy(self):
+        """
+        Creates a new Triangle2D class with the same points as the old triangle class
+        :return:
+        """
         return Triangle2D(self._points[0], self._points[1], self._points[2])
-    
+
     def collidepoint(self, *args):
         """
         The collide point takes in two different arguments.  One is a tuple, and the other is a Point.
@@ -326,8 +340,8 @@ class Triangle2D(object):
 
         # Compute vectors
         v0 = Vector2D(point_c.x - point_a.x, point_c.y - point_a.y)
-        v1 = Vector2D(point_b.x - point_a.x, point_b.y - point_b.y)
-        v2 = Vector2D(x - point_a.x, y - point_b.y)
+        v1 = Vector2D(point_b.x - point_a.x, point_b.y - point_a.y)
+        v2 = Vector2D(x - point_a.x, y - point_a.y)
 
         # Compute dot products
         dot00 = v0 * v0

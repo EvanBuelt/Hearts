@@ -588,6 +588,22 @@ class TriangleTests(unittest.TestCase):
         pointb = CardEngine.VectorMath.Point2D(4, 0)
         pointc = CardEngine.VectorMath.Point2D(0, 0)
 
+        # New point a
+        new_pointa = CardEngine.VectorMath.Point2D(4, 10)
+
+        # Create triangle with corners (0, 0), (4, 0), and (4, 5)
         triangle = CardEngine.VectorMath.Triangle2D(pointa, pointb, pointc)
 
-        return
+        # Verify (3, 5) not within the triangle
+        self.assertFalse(triangle.collidepoint(3, 5))
+
+        # Update point a to (4, 10).  New corners are (0, 0), (4, 0), and (4, 5)
+        triangle.pointa = new_pointa
+
+        # Verify point a updated correctly, and points b and c remained constant
+        self.assertEqual(triangle.pointa, (4, 10))
+        self.assertEqual(triangle.pointb, (4, 0))
+        self.assertEqual(triangle.pointc, (0, 0))
+
+        # Verify (3, 5) is now within the triangle
+        self.assertTrue(triangle.collidepoint(3, 5))
