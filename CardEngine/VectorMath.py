@@ -3,7 +3,7 @@ import math
 __author__ = 'Evan'
 
 
-class Point2D:
+class Point2D(object):
     """
     This class represents a 2D point in space.  Uses several methods to translate, rotate, scale, and reflect the point in space
     """
@@ -14,8 +14,8 @@ class Point2D:
         :param y: A value representing the y coordinate
         :return:
         """
-        self.x = float(x)
-        self.y = float(y)
+        self._x = float(x)
+        self._y = float(y)
 
     def copy(self):
         """
@@ -117,6 +117,19 @@ class Point2D:
             return (self.x != other[0]) or (self.y != other[1])
 
         raise ValueError('Invalid Values For Comparison')
+
+    def _prop_get_x(self):
+        return self._x
+    def _prop_set_x(self, new_x):
+        self._x = float(new_x)
+
+    def _prop_get_y(self):
+        return self._y
+    def _prop_set_y(self, new_y):
+        self._y = float(new_y)
+
+    x = property(_prop_get_x, _prop_set_x)
+    y = property(_prop_get_y, _prop_set_y)
 
 
 class Vector2D:

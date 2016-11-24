@@ -7,9 +7,12 @@ class Hitbox2D(object):
         # If no points were passed in, then initialize an empty array.  Otherwise,
         if points is None:
             self.original_points = []
+            self._x = 0
+            self._y = 0
         else:
             self.original_points = [point for point in points]
-
+            self._x = self.original_points[0].x
+            self._y = self.original_points[0].y
         # Points used to create triangles.  Need copy of original points as overlapping hitboxes
         # will add or remove points.
         self.hitbox_points = [point for point in self.original_points]
@@ -17,29 +20,60 @@ class Hitbox2D(object):
         # Triangles will be created to detect a mouse collision
         self.triangles = []
 
-    def _update_points(self):
-        return
+    def _update(self):
+        self._create_triangles()
+
+    def _create_triangles(self):
+        self.triangles = []
+        if len(self.hitbox_points) >= 3:
+            for i in range(0, len(self.original_points) - 2):
+                point_1 = self.original_points[0]
+                point_2 = self.original_points[i + 1]
+                point_3 = self.original_points[i + 2]
+
+                self.triangles.append(CardEngine.VectorMath.Triangle2D(point_1, point_2, point_3))
 
     def collidepoint(self, x, y):
-        return
+        collide_result = False
+        for triangle in self.triangles:
+            collide_result |= triangle.collidepoint(x, y)
+        return collide_result
 
     def colliderect(self, rect):
-        return
+        (x, y) = rect.topleft
+        width = rect.width
+        height = rect.height
+
+        collide_result = self.collidepoint(x, y) or self.collidepoint(x + width, y) or \
+                         self.collidepoint(x + width, y + height) or self.collidepoint(x, y + height)
+
+        for point in self.original_points:
+            collide_result |= rect.collide(point.x, point.y)
+
+        return collide_result
 
     def collidehitbox(self, hitbox):
-        return
+        collide_result = False
+
+        for point in hitbox.original_points:
+            collide_result |= self.collidepoint(point.x, point.y)
+
+        for point in self.original_points:
+            collide_result |= hitbox.collidepoint(point.x, point.y)
+
+        return collide_result
 
     def _prop_get_x(self):
         return self._x
     def _prop_set_x(self, x):
         self._x = x
-        self._update_points()
+        self._update()
 
     def _prop_get_y(self):
         return self._y
     def _prop_set_y(self, y):
         self._y = y
-        self._update_points()
+        self._update()
 
     x = property(_prop_get_x, _prop_set_x)
     y = property(_prop_get_y, _prop_set_y)
@@ -51,16 +85,12 @@ class SquareHitbox2D(Hitbox2D):
                                  CardEngine.VectorMath.Point2D(x + width, y),
                                  CardEngine.VectorMath.Point2D(x + width, y + height),
                                  CardEngine.VectorMath.Point2D(x, y + height)])
-        self._x = x
-        self._y = y
+
         self._width = width
         self._height = height
         self._angle = math.radians(angle)
 
-        self.points = []
-        self.rotatedPoints = []
-
-        self._set_points()
+        self._update_original_points()
         self._get_rotated_points()
 
     def collide(self, x, y):
@@ -93,23 +123,30 @@ class SquareHitbox2D(Hitbox2D):
         elif 'radians' in kwargs:
             self._angle = kwargs['radians']
 
-        self._set_points()
+        self._update_original_points()
         self._get_rotated_points()
 
-    def _set_points(self):
-        self.points = []
-        self.points.append(CardEngine.VectorMath.Point2D(self.x, self.y))
-        self.points.append(CardEngine.VectorMath.Point2D(self.x + self.width, self.y))
-        self.points.append(CardEngine.VectorMath.Point2D(self.x + self.width, self.y + self.height))
-        self.points.append(CardEngine.VectorMath.Point2D(self.x, self.y + self.height))
+    def _update(self):
+        Hitbox2D._update(self)
+
+    def _update_original_points(self):
+        self.original_points[0].x = self.x
+        self.original_points[0].y = self.y
+
+        self.original_points[1].x = self.x + self.width
+        self.original_points[1].y = self.y
+
+        self.original_points[2].x = self.x + self.width
+        self.original_points[2].y = self.y + self.height
+
+        self.original_points[3].x = self.x
+        self.original_points[3].y = self.y + self.height
 
     def _get_rotated_points(self):
         # Use Point 0 as reference for rotating every point
-        x, y = self.points[0].x, self.points[0].y
+        x, y = self.original_points[0].x, self.original_points[0].y
 
-        self.rotatedPoints = []
-        for point in self.points:
-            self.rotatedPoints.append(point.copy())
+        self.rotatedPoints = [point.copy() for point in self.original_points]
 
         for point in self.rotatedPoints:
             point.rotate_counterclockwise(x, y, self._angle)

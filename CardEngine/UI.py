@@ -91,6 +91,8 @@ class CardUI(Base_UI.UIElement):
 
         x = self._hitbox.rotatedPoints[0].x
         y = self._hitbox.rotatedPoints[0].y
+
+
         # Point 0 is reference used for hitbox, so need to offset the display to match the hitbox
         for point in self._hitbox.rotatedPoints:
             if (point.x - x) < dx:
@@ -162,9 +164,6 @@ class CardUI(Base_UI.UIElement):
 
     def play_sound(self):
         if self._sound is not None:
-            print pygame.time.get_ticks()
-            print self._start_time
-            print self._sound.get_length() * 1000
             if (pygame.time.get_ticks() - self._start_time) > (self._sound.get_length() * 1000):
                 self._sound.play()
                 self._start_time = pygame.time.get_ticks()
