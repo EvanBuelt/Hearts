@@ -119,20 +119,34 @@ class Hearts:
         return
 
     def setup_ui(self):
+        # Card width: 75
+        # Card height: 105
+        # Card width/2: 37.5
+        # Card height/2: 52.5
+
+        # Hand Width: 75 + 12 * 25 = 375
+        # Hand width/2: 187.5
+
+        # Horizontal center: 400
+        # Left Card left side: 400 - 187.5 = 212.5
         one_x = 212
-        one_y = 645
+        one_y = 615
         one_z = 0
 
-        two_x = 150
-        two_y = 200
+        # Vertical center: 400
+        # Top card top side: 400 - 187.5 - 37.5 = 175
+        two_x = 80
+        two_y = 212
         two_z = 0
 
-        three_x = 588
-        three_y = 150
+        # Horizontal center: 400
+        # Right card right side: 400 + 187.5 = 550
+        three_x = 512
+        three_y = 80
         three_z = 0
 
-        four_x = 650
-        four_y = 575
+        four_x = 615
+        four_y = 512
         four_z = 0
 
         self.player_one.sort_hand()

@@ -502,18 +502,18 @@ class PlayingState(State):
 
         CardLogging.log_file.log('PlayingState: P1 ' + str(self.player_one_x) + ',' + str(self.player_one_y))
 
-        self.player_two_x = 400
+        self.player_two_x = 295
         self.player_two_y = 362
 
         CardLogging.log_file.log('PlayingState: P2 ' + str(self.player_two_x) + ',' + str(self.player_two_y))
 
-        self.player_three_x = 438
-        self.player_three_y = 400
+        self.player_three_x = 362
+        self.player_three_y = 295
 
         CardLogging.log_file.log('PlayingState: P3 ' + str(self.player_three_x) + ',' + str(self.player_three_y))
 
         self.player_four_x = 400
-        self.player_four_y = 438
+        self.player_four_y = 362
 
         CardLogging.log_file.log('PlayingState: P4 ' + str(self.player_four_x) + ',' + str(self.player_four_y))
 
