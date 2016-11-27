@@ -92,7 +92,6 @@ class CardUI(Base_UI.UIElement):
         x = self._hitbox.rotatedPoints[0].x
         y = self._hitbox.rotatedPoints[0].y
 
-
         # Point 0 is reference used for hitbox, so need to offset the display to match the hitbox
         for point in self._hitbox.rotatedPoints:
             if (point.x - x) < dx:

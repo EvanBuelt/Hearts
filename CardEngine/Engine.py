@@ -30,6 +30,18 @@ class StandardPlayingCard:
         self.value = value
         self.owner = owner
 
+    def __eq__(self, other):
+        if self.suit == other.suit and self.value == other.value:
+            return True
+        else:
+            return False
+
+    def __ne__(self, other):
+        if self.suit != other.suit or self.value != other.value:
+            return True
+        else:
+            return False
+
 
 class CardEngine:
     # Pygame Display
@@ -51,7 +63,7 @@ class CardEngine:
     CardElements = []
 
     def __init__(self):
-        raise NotImplementedError("CardEgnine cannot be instantiated.")
+        raise NotImplementedError("CardEngine cannot be instantiated.")
 
     @classmethod
     def init(cls, width=800, height=600, display_caption='A Card Game'):

@@ -5,7 +5,8 @@ __author__ = 'Evan'
 
 class Point2D(object):
     """
-    This class represents a 2D point in space.  Uses several methods to translate, rotate, scale, and reflect the point in space
+    This class represents a 2D point in space.
+    Uses several methods to translate, rotate, scale, and reflect the point in space
     """
     def __init__(self, x, y):
         """

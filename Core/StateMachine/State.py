@@ -44,28 +44,10 @@ class SetupState(State):
     def __init__(self, game, name):
         CardLogging.log_file.log('---SetupState __init__() enter---')
         State.__init__(self, game, name)
-        self.card_values = [Constant.Value.Two,
-                            Constant.Value.Three,
-                            Constant.Value.Four,
-                            Constant.Value.Five,
-                            Constant.Value.Six,
-                            Constant.Value.Seven,
-                            Constant.Value.Eight,
-                            Constant.Value.Nine,
-                            Constant.Value.Ten,
-                            Constant.Value.Jack,
-                            Constant.Value.Queen,
-                            Constant.Value.King,
-                            Constant.Value.Ace]
-
-        self.card_suits = [Constant.Suit.Clubs,
-                           Constant.Suit.Diamonds,
-                           Constant.Suit.Spades,
-                           Constant.Suit.Hearts]
 
         # Deck is only referenced to create shuffled deck. Only needs to be created once.
         self.game.deck = Cards.CardEngine.create_deck(self.card_suits, self.card_values)
-        self.game.create_card_ui()
+        self.game._create_card_ui()
         self.shuffled_deck = []
 
         CardLogging.log_file.log('---SetupState __init__() exit---')

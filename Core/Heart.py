@@ -8,6 +8,60 @@ from Core.Player.AI import AI
 import Constant
 
 
+'''
+11/26/2016
+General setup:
+Hearts
+-Variables:
+    -Players
+    -Trick Pile
+    -Deck
+    -Hearts Broken
+    -Current Suit
+
+-Internal Variables:
+    -_State_Machine
+    -_Internal Deck (used in conjunction with card UI)
+    -_Front Sprites
+    -_Back Sprites
+    -_Image Path
+    -_Image Type
+    -_Sound Path
+    -_Sound Type
+    -_clock
+
+-Setup:
+    -Setup four players with appropriate AI
+    -Setup deck
+    -Setup State Machine with appropriate states
+    -Setup defaults for hearts broken and current suit
+    -Setup Clock for looping
+    -Link Engine Callbacks appropriately
+    -Load sprites and sounds
+    -Setup Card UIs
+    -Setup locations of cards in hand
+
+States
+-Setup:
+    -Take deck and shuffle it
+    -Deal shuffled deck to players hand
+    -Set hearts broken to false
+    -Set initial suit to Clubs
+    -Set initial passing hands for all players to empty
+    -Set initial trick pile to empty
+-Passing:
+    -Determine passing direction for round
+    -Get passing cards for computer players
+    -Wait for human player to choose cards
+    -Pass cards to appropriate players
+-Playing:
+    -Wait for each player to play a card
+    -Determine who receive a trick pile
+    -
+
+'''
+
+
 class Player(object):
     def __init__(self, name, ai):
         self.name = name
@@ -63,11 +117,6 @@ class Hearts:
         # Initialize the pygame Engine
         Engine.CardEngine.init(width, height)
 
-        print pygame.mixer.get_num_channels()
-
-        # Initialize clock to limit fps
-        self.clock = pygame.time.Clock()
-
         # Initialize the players for the game
         # Bottom is Human Player.  Goes clockwise for computers
         self.player_one = Player("Human", AI.HumanAI())
@@ -79,6 +128,10 @@ class Hearts:
         self.trick_pile = []
         self.deck = []
 
+        # Variables for playing
+        self.heartsBroken = False
+        self.currentSuit = Constant.Suit.Clubs
+
         # Load the sprites for the cards into the game
         self.front_sprites = {}
         self.back_sprites = {}
@@ -86,7 +139,7 @@ class Hearts:
         self.imagePath = "Res/img/Cards/"
         self.imageType = ".png"
         self.load_sprites()
-        self.create_card_ui()
+        self.setup_deck()
 
         # Setup State Machine for handling game play
         self.stateMachine = StateMachine.StateMachine()
@@ -98,13 +151,13 @@ class Hearts:
 
         self.stateMachine.set_initial_state("Setup")
 
-        # Variables for playing
-        self.heartsBroken = False
-        self.currentSuit = Constant.Suit.Clubs
-
         # Link events to the correct functions
         Engine.CardEngine.keyPress += self.stateMachine.handle_keypress
 
+        # Initialize clock to limit fps
+        self.clock = pygame.time.Clock()
+
+    # Initialization functions
     def load_sprites(self):
         for suit in range(1, 5):
             for value in range(2, 15):
@@ -202,7 +255,7 @@ class Hearts:
 
         return
 
-    def create_card_ui(self):
+    def _create_card_ui(self):
         z = 0
         for card in self.deck:
             front_sprite_name = Constant.value_str[card.value] + " of " + Constant.suit_str[card.suit]
@@ -217,6 +270,30 @@ class Hearts:
             self.card_ui_elements.append(card_ui)
             z += .1
 
+    def setup_deck(self):
+        self.deck = []
+        card_values = [Constant.Value.Two,
+                       Constant.Value.Three,
+                       Constant.Value.Four,
+                       Constant.Value.Five,
+                       Constant.Value.Six,
+                       Constant.Value.Seven,
+                       Constant.Value.Eight,
+                       Constant.Value.Nine,
+                       Constant.Value.Ten,
+                       Constant.Value.Jack,
+                       Constant.Value.Queen,
+                       Constant.Value.King,
+                       Constant.Value.Ace]
+
+        card_suits = [Constant.Suit.Clubs,
+                      Constant.Suit.Diamonds,
+                      Constant.Suit.Spades,
+                      Constant.Suit.Hearts]
+
+        self.deck = Engine.CardEngine.create_deck(card_suits, card_values)
+
+    # Utility functions
     def determine_playable_cards(self, hand):
         playable_cards = []
         # Player will play first card.  Can only play hearts if broken
@@ -240,6 +317,8 @@ class Hearts:
 
         return playable_cards
 
+
+    # Entry Function for playing hearts
     def play(self):
         while True:
             self.stateMachine.update()
