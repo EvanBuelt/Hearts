@@ -24,8 +24,9 @@ class StateMachine:
         if self.current_state is not None:
             self.current_state.exit()
 
-        self.current_state = self.state_list.get(key)
-        self.current_state.enter()
+        if key in self.state_list:
+            self.current_state = self.state_list.get(key)
+            self.current_state.enter()
         return
 
     def handle_keypress(self, event):
@@ -37,7 +38,10 @@ class StateMachine:
         return
 
     def update(self):
-        key = self.current_state.update()
+        if self.current_state is not None:
+            key = self.current_state.update()
+        else:
+            key = None
         next_state = self.state_list.get(key, None)
         if next_state is not None:
             CardLogging.log_file.log("StateMachine: Transitioning")
