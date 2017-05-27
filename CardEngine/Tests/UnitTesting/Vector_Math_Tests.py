@@ -508,8 +508,10 @@ class TriangleTests(unittest.TestCase):
     def test_Triangle(self):
         # Initialize triangle to test initial setup
         triangle = CardEngine.VectorMath.Triangle2D(CardEngine.VectorMath.Point2D(0, 0),
-                                              CardEngine.VectorMath.Point2D(3, 0),
-                                              CardEngine.VectorMath.Point2D(0, 4))
+                                                    CardEngine.VectorMath.Point2D(3, 0),
+                                                    CardEngine.VectorMath.Point2D(0, 4))
+
+        triangle2 = CardEngine.VectorMath.Triangle2D((1, 2), (3, 5), (0, 0))
 
         # Syntactic sugar
         point_a = triangle._points[0]
@@ -525,11 +527,21 @@ class TriangleTests(unittest.TestCase):
         self.assertNotEqual(point_b, point_c)
         self.assertNotEqual(point_a, point_c)
 
+        # Syntactic sugar for triangle 2
+        point_1 = (1, 2)
+        point_2 = (3, 5)
+        point_3 = (0, 0)
+
+        # Ensure points were setup correctly
+        self.assertEqual(triangle2._points[0], point_1)
+        self.assertEqual(triangle2._points[1], point_2)
+        self.assertEqual(triangle2._points[2], point_3)
+
     def test_CollidePoint(self):
         # Initialize triangle to test collide point works with both points and tupples
         triangle = CardEngine.VectorMath.Triangle2D(CardEngine.VectorMath.Point2D(0, 0),
-                                              CardEngine.VectorMath.Point2D(4, 0),
-                                              CardEngine.VectorMath.Point2D(0, 4))
+                                                    CardEngine.VectorMath.Point2D(4, 0),
+                                                    CardEngine.VectorMath.Point2D(0, 4))
 
         # Initialize points for test
         point_inside_triangle_1 = CardEngine.VectorMath.Point2D(1.8, 1.8)
@@ -607,3 +619,46 @@ class TriangleTests(unittest.TestCase):
 
         # Verify (3, 5) is now within the triangle
         self.assertTrue(triangle.collidepoint(3, 5))
+
+    def test_copy(self):
+        point_a = (2, 3)
+        point_b = (2, 5)
+        point_c = (5, 5)
+        triangle1 = CardEngine.VectorMath.Triangle2D(point_a, point_b, point_c)
+        triangle2 = triangle1.copy()
+
+        self.assertEqual(triangle1, triangle2)
+
+    def test_Equal(self):
+        # Create triangle
+        triangle = CardEngine.VectorMath.Triangle2D((0, 0), (1, 0), (0, 1))
+
+        # Create three points to test against
+        p1 = (0, 0)
+        p2 = (1, 0)
+        p3 = (0, 1)
+
+        # Verify all 6 combinations (3 * 2 * 1 = 6)
+        self.assertEqual(triangle, CardEngine.VectorMath.Triangle2D(p1, p2, p3))
+        self.assertEqual(triangle, CardEngine.VectorMath.Triangle2D(p1, p3, p2))
+        self.assertEqual(triangle, CardEngine.VectorMath.Triangle2D(p2, p1, p3))
+        self.assertEqual(triangle, CardEngine.VectorMath.Triangle2D(p2, p3, p1))
+        self.assertEqual(triangle, CardEngine.VectorMath.Triangle2D(p3, p1, p2))
+        self.assertEqual(triangle, CardEngine.VectorMath.Triangle2D(p3, p2, p1))
+
+    def test_Not_Equal(self):
+        triangle = CardEngine.VectorMath.Triangle2D((0, 0), (5, 2), (2, 5))
+
+        p1 = (0, 0)
+        p2 = (5, 2)
+        p3 = (2, 5)
+        p4 = (0, 1)
+
+        self.assertNotEqual(triangle, CardEngine.VectorMath.Triangle2D(p1, p2, p4))
+        self.assertNotEqual(triangle, CardEngine.VectorMath.Triangle2D(p1, p3, p4))
+        self.assertNotEqual(triangle, CardEngine.VectorMath.Triangle2D(p2, p3, p4))
+        self.assertNotEqual(triangle, CardEngine.VectorMath.Triangle2D(p2, p1, p4))
+        self.assertNotEqual(triangle, CardEngine.VectorMath.Triangle2D(p3, p1, p4))
+        self.assertNotEqual(triangle, CardEngine.VectorMath.Triangle2D(p3, p2, p4))
+
+

@@ -321,7 +321,28 @@ class Triangle2D(object):
         :param point_c: Third point
         :return:
         """
-        self._points = [point_a, point_b, point_c]
+
+        self._points = []
+        if isinstance(point_a, Point2D):
+            self._points.append(point_a)
+        elif isinstance(point_a, type((2, 2))) or isinstance(point_a, type((2., 2.))):
+            self._points.append(Point2D(point_a[0], point_a[1]))
+        else:
+            raise ValueError("Not a tuple of 2 points or a Point2D class")
+
+        if isinstance(point_b, Point2D):
+            self._points.append(point_b)
+        elif isinstance(point_b, type((2, 2))) or isinstance(point_b, type((2., 2.))):
+            self._points.append(Point2D(point_b[0], point_b[1]))
+        else:
+            raise ValueError("Not a tuple of 2 points or a Point2D class")
+
+        if isinstance(point_c, Point2D):
+            self._points.append(point_c)
+        elif isinstance(point_c, type((2, 2))) or isinstance(point_c, type((2., 2.))):
+            self._points.append(Point2D(point_c[0], point_c[1]))
+        else:
+            raise ValueError("Not a tuple of 2 points or a Point2D class")
 
     def copy(self):
         """
@@ -385,6 +406,31 @@ class Triangle2D(object):
             if triangle.collidepoint(point):
                 return True
         return False
+
+    def __eq__(self, other):
+        if isinstance(other, type(self)):
+            point_a = other.pointa
+            point_b = other.pointb
+            point_c = other.pointc
+        else:
+            raise ValueError("Comparison inputs not valid")
+
+        if point_a == self.pointa and point_b == self.pointb and point_c == self.pointc:
+            return True
+        if point_a == self.pointa and point_b == self.pointc and point_c == self.pointb:
+            return True
+        if point_a == self.pointb and point_b == self.pointa and point_c == self.pointc:
+            return True
+        if point_a == self.pointb and point_b == self.pointc and point_c == self.pointa:
+            return True
+        if point_a == self.pointc and point_b == self.pointa and point_c == self.pointb:
+            return True
+        if point_a == self.pointc and point_b == self.pointb and point_c == self.pointa:
+            return True
+        return False
+
+    def __ne__(self, other):
+        return not (self == other)
 
     def _prop_getpointa(self):
         return self._points[0]

@@ -127,6 +127,8 @@ class SquareHitbox2D(Hitbox2D):
         self._get_rotated_points()
 
     def _update(self):
+        self._update_original_points()
+        self._get_rotated_points()
         Hitbox2D._update(self)
 
     def _update_original_points(self):
@@ -146,10 +148,7 @@ class SquareHitbox2D(Hitbox2D):
         # Use Point 0 as reference for rotating every point
         x, y = self.original_points[0].x, self.original_points[0].y
 
-        self.rotatedPoints = [point.copy() for point in self.original_points]
-
-        for point in self.rotatedPoints:
-            point.rotate_counterclockwise(x, y, self._angle)
+        self.rotatedPoints = [point.copy().rotate_counterclockwise(x, y, self._angle) for point in self.original_points]
 
     def _prop_get_topleft(self):
         return
